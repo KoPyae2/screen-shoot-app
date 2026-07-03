@@ -71,10 +71,16 @@ pub fn run() {
             imaging::clean_sessions(&handle);
 
             let (full, region, win) = shortcuts();
-            let gs = app.global_shortcut();
-            let _ = gs.register(full);
-            let _ = gs.register(region);
-            let _ = gs.register(win);
+            let gs = handle.global_shortcut();
+            if let Err(e) = gs.register(full) {
+                eprintln!("shortcut register fullscreen failed: {e}");
+            }
+            if let Err(e) = gs.register(region) {
+                eprintln!("shortcut register region failed: {e}");
+            }
+            if let Err(e) = gs.register(win) {
+                eprintln!("shortcut register window failed: {e}");
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
