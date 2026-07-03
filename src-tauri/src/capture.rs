@@ -161,18 +161,36 @@ pub async fn capture_window(
 
 #[tauri::command]
 pub async fn capture_active_window(app: AppHandle) -> Result<CaptureResult, String> {
-    let target = foreground_window_id();
+    // 1. Try the HWND stored by the shortcut handler (before it focused Snapture)
+    let stored = crate::ACTIVE_WINDOW_TARGET.lock().ok().and_then(|mut t| t.take());
+    // 2. Fall back to current foreground window
+    let target = stored.or_else(foreground_window_id);
+
     hide_main(&app);
+
     let img = tauri::async_runtime::spawn_blocking(move || -> Result<RgbaImage, String> {
         let windows = Window::all().map_err(|e| e.to_string())?;
-        let w = match target {
-            Some(id) => windows.into_iter().find(|w| w.id().map(|i| i == id).unwrap_or(false)),
-            None => windows
-                .into_iter()
-                .find(|w| !w.is_minimized().unwrap_or(true) && !w.title().unwrap_or_default().is_empty()),
+
+        // If we have a target HWND, try to find it in the window list.
+        // If it's not found (e.g. it was our own hidden window), fall through.
+        if let Some(id) = target {
+            if let Some(w) = windows.iter().find(|w| w.id().map(|i| i == id).unwrap_or(false)) {
+                return window_to_rgba(w);
+            }
         }
-        .ok_or_else(|| "no active window found".to_string())?;
-        window_to_rgba(&w)
+
+        // Fallback: first visible non-minimized window with a non-empty title.
+        windows
+            .iter()
+            .find(|w| {
+                let id = w.id().unwrap_or(0);
+                let is_self = Some(id) == target; // skip our own window
+                !is_self
+                    && !w.is_minimized().unwrap_or(true)
+                    && !w.title().unwrap_or_default().is_empty()
+            })
+            .ok_or_else(|| "no active window found".to_string())
+            .and_then(|w| window_to_rgba(w))
     })
     .await
     .map_err(|e| e.to_string())?;
@@ -181,7 +199,7 @@ pub async fn capture_active_window(app: AppHandle) -> Result<CaptureResult, Stri
 }
 
 #[cfg(windows)]
-fn foreground_window_id() -> Option<u32> {
+pub(crate) fn foreground_window_id() -> Option<u32> {
     use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
     let hwnd = unsafe { GetForegroundWindow() };
     if hwnd.0.is_null() {
@@ -192,6 +210,6 @@ fn foreground_window_id() -> Option<u32> {
 }
 
 #[cfg(not(windows))]
-fn foreground_window_id() -> Option<u32> {
+pub(crate) fn foreground_window_id() -> Option<u32> {
     None
 }

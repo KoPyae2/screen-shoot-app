@@ -6,17 +6,22 @@ mod models;
 mod overlay;
 mod saving;
 
+use std::sync::Mutex;
+
 use tauri::{Emitter, Manager};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 use overlay::RegionStore;
 
+/// Last foreground window HWND, recorded by the shortcut handler before focusing Snapture.
+pub(crate) static ACTIVE_WINDOW_TARGET: Mutex<Option<u32>> = Mutex::new(None);
+
 /// The three quick-capture global shortcuts.
 fn shortcuts() -> (Shortcut, Shortcut, Shortcut) {
     let mods = Modifiers::CONTROL | Modifiers::SHIFT;
     (
-        Shortcut::new(Some(mods), Code::Digit1), // full screen
-        Shortcut::new(Some(mods), Code::Digit2), // region
+        Shortcut::new(Some(mods), Code::Digit1), // region
+        Shortcut::new(Some(mods), Code::Digit2), // full screen
         Shortcut::new(Some(mods), Code::Digit3), // active window
     )
 }
@@ -33,16 +38,22 @@ pub fn run() {
                     if event.state() != ShortcutState::Pressed {
                         return;
                     }
-                    let (full, region, win) = shortcuts();
-                    let kind = if shortcut == &full {
-                        "fullscreen"
-                    } else if shortcut == &region {
+                    let (region_key, full_key, win) = shortcuts();
+                    let kind = if shortcut == &region_key {
                         "region"
+                    } else if shortcut == &full_key {
+                        "fullscreen"
                     } else if shortcut == &win {
                         "window"
                     } else {
                         return;
                     };
+                    // Record foreground window BEFORE focusing Snapture
+                    if kind == "window" {
+                        let _ = ACTIVE_WINDOW_TARGET.lock().map(|mut t| {
+                            *t = crate::capture::foreground_window_id()
+                        });
+                    }
                     if let Some(w) = app.get_webview_window("main") {
                         // Don't yank focus back to main if a region overlay is
                         // currently visible (mid-selection). Otherwise main would
@@ -70,15 +81,15 @@ pub fn run() {
             let handle = app.handle().clone();
             imaging::clean_sessions(&handle);
 
-            let (full, region, win) = shortcuts();
+            let (region_key, full_key, win_key) = shortcuts();
             let gs = handle.global_shortcut();
-            if let Err(e) = gs.register(full) {
-                eprintln!("shortcut register fullscreen failed: {e}");
-            }
-            if let Err(e) = gs.register(region) {
+            if let Err(e) = gs.register(region_key) {
                 eprintln!("shortcut register region failed: {e}");
             }
-            if let Err(e) = gs.register(win) {
+            if let Err(e) = gs.register(full_key) {
+                eprintln!("shortcut register fullscreen failed: {e}");
+            }
+            if let Err(e) = gs.register(win_key) {
                 eprintln!("shortcut register window failed: {e}");
             }
             Ok(())
