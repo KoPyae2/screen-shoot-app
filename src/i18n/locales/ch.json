@@ -1,0 +1,85 @@
+{
+  "app": {
+    "name": "Snapture",
+    "tagline": "截图工作室",
+    "version": "v1.0.0"
+  },
+  "sidebar": {
+    "recent": "最近历史",
+    "clear": "清空",
+    "noScreenshots": "暂无截图",
+    "yourCapturesWillAppear": "截取的画面将显示在这里"
+  },
+  "capture": {
+    "title": "截图",
+    "description": "截取屏幕 — 自动复制到剪贴板并打开编辑器",
+    "fullScreen": "全屏截图",
+    "fullScreenDesc": "截取整个显示器屏幕",
+    "fullScreenHotkey": "Ctrl+⇧+1",
+    "region": "区域截图",
+    "regionDesc": "拖动鼠标选择截取区域",
+    "regionHotkey": "Ctrl+⇧+2",
+    "window": "窗口截图",
+    "windowDesc": "选择一个打开的窗口",
+    "windowHotkey": "Ctrl+⇧+3",
+    "activeWindow": "活动窗口",
+    "activeWindowDesc": "截取当前聚焦的窗口",
+    "allDisplays": "所有显示器",
+    "allDisplaysDesc": "同时截取所有显示器",
+    "moreComingSoon": "更多截图模式敬请期待",
+    "moreSoon": "敬请期待",
+    "chooseDisplay": "选择显示器",
+    "primary": "主显示器",
+    "chooseWindow": "选择窗口",
+    "searchWindows": "搜索窗口…",
+    "refreshWindowList": "刷新窗口列表",
+    "noWindowsFound": "未找到可截取的窗口",
+    "noWindowsMatch": "没有找到与 \"{{query}}\" 匹配的窗口"
+  },
+  "editor": {
+    "backToCapture": "返回截图",
+    "selectMove": "选择 / 移动 (V)",
+    "arrow": "箭头 (A)",
+    "rectangle": "矩形 (R)",
+    "ellipse": "椭圆 (O)",
+    "freeDraw": "自由涂鸦 (P)",
+    "text": "文字 (T)",
+    "highlighter": "荧光笔 (H)",
+    "blur": "模糊 (B)",
+    "pixelate": "马赛克 (X)",
+    "customColor": "自定义颜色",
+    "strength": "强度",
+    "font": "字体",
+    "size": "字号",
+    "undo": "撤销 (Ctrl+Z)",
+    "redo": "重做 (Ctrl+Y)",
+    "delete": "删除所选物品 (Del)",
+    "copy": "复制",
+    "save": "保存",
+    "copiedToClipboard": "已将编辑后的图片复制到剪贴板",
+    "saveDialogTitle": "保存截图",
+    "saveDialogDefaultName": "screenshot-{{timestamp}}.png",
+    "pngImage": "PNG 图片",
+    "jpegImage": "JPEG 图片",
+    "saved": "已保存"
+  },
+  "overlay": {
+    "dragHint": "拖动鼠标选择区域 · 按 {{esc}} 取消",
+    "esc": "Esc"
+  },
+  "toast": {
+    "screenCaptured": "屏幕已截取并复制到剪贴板",
+    "allMonitorsCaptured": "已截取所有显示器屏幕",
+    "windowCaptured": "窗口已截取并复制到剪贴板",
+    "activeWindowCaptured": "活动窗口已截取"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{{n}} 分钟前",
+    "hoursAgo": "{{n}} 小时前",
+    "daysAgo": "{{n}} 天前"
+  },
+  "ui": {
+    "close": "关闭"
+  }
+}

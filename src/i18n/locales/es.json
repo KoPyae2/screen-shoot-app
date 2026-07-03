@@ -1,0 +1,85 @@
+{
+  "app": {
+    "name": "Snapture",
+    "tagline": "Estudio de capturas",
+    "version": "v1.0.0"
+  },
+  "sidebar": {
+    "recent": "Recientes",
+    "clear": "Limpiar",
+    "noScreenshots": "Sin capturas aún.",
+    "yourCapturesWillAppear": "Las capturas guardadas aparecerán aquí."
+  },
+  "capture": {
+    "title": "Capturar",
+    "description": "Haz una captura: se copiará automáticamente al portapapeles y se abrirá para editar.",
+    "fullScreen": "Pantalla completa",
+    "fullScreenDesc": "Captura toda la pantalla",
+    "fullScreenHotkey": "Ctrl+⇧+1",
+    "region": "Región",
+    "regionDesc": "Arrastra para seleccionar un área",
+    "regionHotkey": "Ctrl+⇧+2",
+    "window": "Ventana",
+    "windowDesc": "Elige una ventana abierta",
+    "windowHotkey": "Ctrl+⇧+3",
+    "activeWindow": "Ventana activa",
+    "activeWindowDesc": "Captura la ventana en primer plano",
+    "allDisplays": "Todas las pantallas",
+    "allDisplaysDesc": "Todos los monitores a la vez",
+    "moreComingSoon": "Próximamente más modos de captura",
+    "moreSoon": "Más pronto",
+    "chooseDisplay": "Elige una pantalla",
+    "primary": "Principal",
+    "chooseWindow": "Elige una ventana",
+    "searchWindows": "Buscar ventanas…",
+    "refreshWindowList": "Actualizar lista de ventanas",
+    "noWindowsFound": "No se encontraron ventanas capturables.",
+    "noWindowsMatch": "Ninguna ventana coincide con \"{{query}}\"."
+  },
+  "editor": {
+    "backToCapture": "Volver a capturar",
+    "selectMove": "Seleccionar / Mover (V)",
+    "arrow": "Flecha (A)",
+    "rectangle": "Rectángulo (R)",
+    "ellipse": "Elipse (O)",
+    "freeDraw": "Dibujo libre (P)",
+    "text": "Texto (T)",
+    "highlighter": "Resaltador (H)",
+    "blur": "Desenfocar (B)",
+    "pixelate": "Pixelar (X)",
+    "customColor": "Color personalizado",
+    "strength": "Intensidad",
+    "font": "Fuente",
+    "size": "Tamaño",
+    "undo": "Deshacer (Ctrl+Z)",
+    "redo": "Rehacer (Ctrl+Y)",
+    "delete": "Eliminar seleccionado (Supr)",
+    "copy": "Copiar",
+    "save": "Guardar",
+    "copiedToClipboard": "Imagen editada copiada al portapapeles",
+    "saveDialogTitle": "Guardar captura de pantalla",
+    "saveDialogDefaultName": "captura-{{timestamp}}.png",
+    "pngImage": "Imagen PNG",
+    "jpegImage": "Imagen JPEG",
+    "saved": "Guardado"
+  },
+  "overlay": {
+    "dragHint": "Arrastra para seleccionar un área · {{esc}} para cancelar",
+    "esc": "Esc"
+  },
+  "toast": {
+    "screenCaptured": "Pantalla capturada y copiada al portapapeles",
+    "allMonitorsCaptured": "Todas las pantallas capturadas",
+    "windowCaptured": "Ventana capturada y copiada al portapapeles",
+    "activeWindowCaptured": "Ventana activa capturada"
+  },
+  "time": {
+    "justNow": "ahora mismo",
+    "minutesAgo": "hace {{n}}m",
+    "hoursAgo": "hace {{n}}h",
+    "daysAgo": "hace {{n}}d"
+  },
+  "ui": {
+    "close": "Cerrar"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "app": {
+    "name": "Snapture",
+    "tagline": "Screenshot studio",
+    "version": "v1.0.0"
+  },
+  "sidebar": {
+    "recent": "Recent",
+    "clear": "Clear",
+    "noScreenshots": "No screenshots yet.",
+    "yourCapturesWillAppear": "Your saved captures will appear here."
+  },
+  "capture": {
+    "title": "Capture",
+    "description": "Take a shot — it's auto-copied to your clipboard and opened for editing.",
+    "fullScreen": "Full Screen",
+    "fullScreenDesc": "Capture an entire display",
+    "fullScreenHotkey": "Ctrl+⇧+1",
+    "region": "Region",
+    "regionDesc": "Drag to select an area",
+    "regionHotkey": "Ctrl+⇧+2",
+    "window": "Window",
+    "windowDesc": "Pick an open window",
+    "windowHotkey": "Ctrl+⇧+3",
+    "activeWindow": "Active Window",
+    "activeWindowDesc": "Capture the focused window",
+    "allDisplays": "All Displays",
+    "allDisplaysDesc": "Every monitor at once",
+    "moreComingSoon": "More capture modes coming soon",
+    "moreSoon": "More soon",
+    "chooseDisplay": "Choose a display",
+    "primary": "Primary",
+    "chooseWindow": "Choose a window",
+    "searchWindows": "Search windows…",
+    "refreshWindowList": "Refresh window list",
+    "noWindowsFound": "No capturable windows found.",
+    "noWindowsMatch": "No windows match \"{{query}}\"."
+  },
+  "editor": {
+    "backToCapture": "Back to capture",
+    "selectMove": "Select / Move (V)",
+    "arrow": "Arrow (A)",
+    "rectangle": "Rectangle (R)",
+    "ellipse": "Ellipse (O)",
+    "freeDraw": "Free draw (P)",
+    "text": "Text (T)",
+    "highlighter": "Highlighter (H)",
+    "blur": "Blur (B)",
+    "pixelate": "Pixelate (X)",
+    "customColor": "Custom color",
+    "strength": "Strength",
+    "font": "Font",
+    "size": "Size",
+    "undo": "Undo (Ctrl+Z)",
+    "redo": "Redo (Ctrl+Y)",
+    "delete": "Delete selected (Del)",
+    "copy": "Copy",
+    "save": "Save",
+    "copiedToClipboard": "Copied edited image to clipboard",
+    "saveDialogTitle": "Save screenshot",
+    "saveDialogDefaultName": "screenshot-{{timestamp}}.png",
+    "pngImage": "PNG Image",
+    "jpegImage": "JPEG Image",
+    "saved": "Saved"
+  },
+  "overlay": {
+    "dragHint": "Drag to select an area · {{esc}} to cancel",
+    "esc": "Esc"
+  },
+  "toast": {
+    "screenCaptured": "Screen captured & copied to clipboard",
+    "allMonitorsCaptured": "All monitors captured",
+    "windowCaptured": "Window captured & copied to clipboard",
+    "activeWindowCaptured": "Active window captured"
+  },
+  "time": {
+    "justNow": "just now",
+    "minutesAgo": "{{n}}m ago",
+    "hoursAgo": "{{n}}h ago",
+    "daysAgo": "{{n}}d ago"
+  },
+  "ui": {
+    "close": "Close"
+  }
+}
