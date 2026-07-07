@@ -2,7 +2,7 @@
   "app": {
     "name": "Snapture",
     "tagline": "स्क्रीनशॉट स्टूडियो",
-    "version": "v1.0.0"
+    "version": "v1.1.0"
   },
   "sidebar": {
     "recent": "हालिया",
