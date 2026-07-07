@@ -4,6 +4,9 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -61,5 +64,4 @@ jobs:
           releaseName: "Snapture ${{ github.ref_name }}"
           releaseBody: "See the assets below to download and install Snapture."
           releaseDraft: true
-          includeDebug: false
           args: --target ${{ matrix.target }}
