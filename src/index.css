@@ -152,6 +152,24 @@ body {
   animation: fade-in 0.18s ease-out both;
 }
 
+/* Thin scrollbar for the editor toolbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
+}
+
 /* Range slider thumb */
 .snap-slider::-webkit-slider-thumb {
   -webkit-appearance: none;

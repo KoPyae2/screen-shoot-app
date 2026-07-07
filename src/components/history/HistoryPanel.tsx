@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { History, Trash } from "lucide-react";
+import { History, Trash, AlertTriangle } from "lucide-react";
 import { useHistoryStore } from "../../store/historyStore";
 import type { CaptureResult } from "../../lib/types";
 import { Button } from "../ui/Button";
+import { Modal } from "../ui/Modal";
 import { Thumbnail } from "./Thumbnail";
 
 interface Props {
@@ -12,11 +13,13 @@ interface Props {
 
 export function HistoryPanel({ onOpen }: Props) {
   const { t } = useTranslation();
-  const { entries, refresh, remove, clear } = useHistoryStore();
+  const entries = useHistoryStore((s) => s.entries);
+  const refresh = useHistoryStore((s) => s.refresh);
+  const remove = useHistoryStore((s) => s.remove);
+  const clear = useHistoryStore((s) => s.clear);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
@@ -36,7 +39,7 @@ export function HistoryPanel({ onOpen }: Props) {
             size="sm"
             variant="ghost"
             className="h-7 px-2 text-fg-subtle hover:text-danger"
-            onClick={clear}
+            onClick={() => setConfirmOpen(true)}
           >
             <Trash size={14} /> {t("sidebar.clear")}
           </Button>
@@ -73,6 +76,41 @@ export function HistoryPanel({ onOpen }: Props) {
           ))
         )}
       </div>
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        icon={
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-danger/15 text-danger">
+            <AlertTriangle size={18} />
+          </span>
+        }
+        title={t("sidebar.clearAllConfirm")}
+      >
+        <div className="px-5 pb-4 pt-1">
+          <p className="text-sm text-fg-muted">{t("sidebar.clearAllConfirmDesc")}</p>
+        </div>
+        <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-5 py-4">
+          <Button
+            variant="subtle"
+            size="sm"
+            className="h-9 px-4"
+            onClick={() => setConfirmOpen(false)}
+          >
+            {t("ui.close")}
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            className="h-9 px-4"
+            onClick={async () => {
+              setConfirmOpen(false);
+              await clear();
+            }}
+          >
+            {t("sidebar.clear")}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

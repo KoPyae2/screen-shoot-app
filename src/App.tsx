@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Camera, Github } from "lucide-react";
 import { CaptureToolbar } from "./components/capture/CaptureToolbar";
-import { Editor } from "./components/editor/Editor";
 import { HistoryPanel } from "./components/history/HistoryPanel";
 import { Toaster } from "./components/ui/Toast";
 import { Header } from "./components/ui/Header";
@@ -13,6 +12,8 @@ import { listMonitors } from "./lib/commands";
 import type { CaptureResult } from "./lib/types";
 
 type View = "capture" | "editor";
+
+const EditorLazy = React.lazy(() => import("./components/editor/Editor"));
 
 export default function App() {
   const { t } = useTranslation();
@@ -98,7 +99,9 @@ export default function App() {
             <CaptureToolbar />
           </div>
         ) : (
-          <Editor capture={capture} onBack={() => setView("capture")} />
+          <React.Suspense fallback={<div className="flex-1" />}>
+            <EditorLazy capture={capture} onBack={() => setView("capture")} />
+          </React.Suspense>
         )}
         </main>
       </div>

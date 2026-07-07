@@ -7,6 +7,8 @@
   "sidebar": {
     "recent": "最近历史",
     "clear": "清空",
+    "clearAllConfirm": "确定清空所有截图？",
+    "clearAllConfirmDesc": "这将永久删除所有已保存的截图，此操作无法撤销。",
     "noScreenshots": "暂无截图",
     "yourCapturesWillAppear": "截取的画面将显示在这里"
   },

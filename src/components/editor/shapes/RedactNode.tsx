@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import Konva from "konva";
 import { Image as KonvaImage } from "react-konva";
 import type { RedactShape } from "../../../store/editorStore";
+import * as React from "react";
 
 interface Props {
   shape: RedactShape;
@@ -16,10 +17,12 @@ interface Props {
  * blur or pixelate filter baked over it. Because it re-samples real pixels,
  * the obscured content is destroyed on export.
  */
-export function RedactNode({ shape, image, onSelect, onChange, draggable }: Props) {
+export const RedactNode = React.memo(function RedactNode({
+  shape, image, onSelect, onChange, draggable,
+}: Props) {
   const ref = useRef<Konva.Image>(null);
 
-  // Re-cache whenever geometry, strength, or the base image changes.
+  // Re-cache when geometry, strength, or the base image changes.
   useEffect(() => {
     const node = ref.current;
     if (!node || !image) return;
@@ -76,4 +79,4 @@ export function RedactNode({ shape, image, onSelect, onChange, draggable }: Prop
       }}
     />
   );
-}
+});

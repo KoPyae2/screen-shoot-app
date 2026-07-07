@@ -17,15 +17,28 @@ interface ToastState {
 }
 
 let counter = 1;
+// Track pending auto-dismiss timers so we can cancel on unmount.
+const pendingTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
 export const useToastStore = create<ToastState>((set) => ({
   toasts: [],
   push: (kind, message) => {
     const id = counter++;
     set((s) => ({ toasts: [...s.toasts, { id, kind, message }] }));
-    setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 3200);
+    const timer = setTimeout(() => {
+      pendingTimers.delete(id);
+      set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+    }, 3200);
+    pendingTimers.set(id, timer);
   },
-  dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+  dismiss: (id) => {
+    const timer = pendingTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      pendingTimers.delete(id);
+    }
+    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+  },
 }));
 
 export const toast = {
@@ -42,6 +55,15 @@ const icons: Record<ToastKind, React.ReactNode> = {
 
 export function Toaster() {
   const { toasts, dismiss } = useToastStore();
+
+  // Cancel all pending auto-dismiss timers when the toaster unmounts.
+  React.useEffect(() => {
+    return () => {
+      pendingTimers.forEach((timer) => clearTimeout(timer));
+      pendingTimers.clear();
+    };
+  }, []);
+
   return (
     <div className="pointer-events-none fixed bottom-5 left-1/2 z-[100] flex -translate-x-1/2 flex-col items-center gap-2">
       {toasts.map((t) => (

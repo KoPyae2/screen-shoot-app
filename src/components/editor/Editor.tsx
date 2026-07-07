@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import Konva from "konva";
 import { Stage, Layer, Image as KonvaImage, Transformer } from "react-konva";
@@ -8,7 +8,7 @@ import { copyBytesToClipboard, readImageDataUrl, saveImageBytes } from "../../li
 import { dataUrlToBase64 } from "../../lib/export";
 import { useEditorStore, type Shape } from "../../store/editorStore";
 import type { CaptureResult, ImageFormat } from "../../lib/types";
-import { EditorToolbar } from "./EditorToolbar";
+import { LeftToolbar, RightToolbar } from "./EditorToolbar";
 import { ShapeNode } from "./shapes/ShapeNode";
 import { toast } from "../ui/Toast";
 
@@ -24,30 +24,32 @@ export function Editor({ capture, onBack }: Props) {
   const { t } = useTranslation();
   const [dataUrl, setDataUrl] = useState<string | undefined>(undefined);
   const [image] = useImage(dataUrl ?? "");
-  const {
-    shapes,
-    tool,
-    color,
-    strokeWidth,
-    fontSize,
-    redactStrength,
-    selectedId,
-    select,
-    addShape,
-    updateShape,
-    updateShapeCommit,
-    removeSelected,
-    reset,
-    undo,
-    redo,
-    setTool,
-  } = useEditorStore();
+  const shapes = useEditorStore((s) => s.shapes);
+  const tool = useEditorStore((s) => s.tool);
+  const color = useEditorStore((s) => s.color);
+  const strokeWidth = useEditorStore((s) => s.strokeWidth);
+  const fontSize = useEditorStore((s) => s.fontSize);
+  const redactStrength = useEditorStore((s) => s.redactStrength);
+  const selectedId = useEditorStore((s) => s.selectedId);
+  const select = useEditorStore((s) => s.select);
+  const addShape = useEditorStore((s) => s.addShape);
+  const updateShape = useEditorStore((s) => s.updateShape);
+  const updateShapeCommit = useEditorStore((s) => s.updateShapeCommit);
+  const removeSelected = useEditorStore((s) => s.removeSelected);
+  const reset = useEditorStore((s) => s.reset);
+  const undo = useEditorStore((s) => s.undo);
+  const redo = useEditorStore((s) => s.redo);
+  const setTool = useEditorStore((s) => s.setTool);
 
   const stageRef = useRef<Konva.Stage>(null);
   const trRef = useRef<Konva.Transformer>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const drawingId = useRef<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Live shape ref for batched updates during drawing.
+  const liveShapeRef = useRef<Shape | null>(null);
+  // Throttle Zustand writes to once per animation frame.
+  const rafScheduledRef = useRef(false);
   const [scale, setScale] = useState(1);
   const [busy, setBusy] = useState(false);
   const [editingText, setEditingText] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -145,7 +147,12 @@ export function Editor({ capture, onBack }: Props) {
     if (!stage) return { x: 0, y: 0 };
     const p = stage.getPointerPosition();
     if (!p) return { x: 0, y: 0 };
-    return { x: p.x / scale, y: p.y / scale };
+    // Use Konva's inverse transform to correctly map pointer position into
+    // the stage's logical coordinate space, accounting for scale/offset.
+    const transform = stage.getAbsoluteTransform().copy();
+    transform.invert();
+    const pos = transform.point(p);
+    return { x: pos.x, y: pos.y };
   };
 
   const onMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -194,29 +201,56 @@ export function Editor({ capture, onBack }: Props) {
     }
   };
 
-  const onMouseMove = () => {
+  const onMouseMove = useCallback(() => {
     const id = drawingId.current;
     if (!id) return;
     const { x, y } = relPos();
     const shape = useEditorStore.getState().shapes.find((s) => s.id === id);
     if (!shape) return;
 
+    let patch: Partial<Shape> | null = null;
     if (shape.type === "arrow") {
-      updateShape(id, { points: [shape.points[0], shape.points[1], x, y] } as Partial<Shape>);
+      patch = { points: [shape.points[0], shape.points[1], x, y] } as Partial<Shape>;
     } else if (shape.type === "pen" || shape.type === "highlighter") {
-      updateShape(id, { points: [...shape.points, x, y] } as Partial<Shape>);
+      patch = { points: [...shape.points, x, y] } as Partial<Shape>;
     } else if (shape.type === "rect" || shape.type === "ellipse" || shape.type === "blur" || shape.type === "pixelate") {
-      updateShape(id, { width: x - shape.x, height: y - shape.y } as Partial<Shape>);
+      patch = { width: x - shape.x, height: y - shape.y } as Partial<Shape>;
     }
-  };
+    if (!patch) return;
 
-  const onMouseUp = () => {
+    // Normalize geometry so the component never sees negative width/height.
+    let normalized = { ...shape, ...patch } as Shape;
+    if ("width" in normalized && (normalized.type === "rect" || normalized.type === "ellipse" || normalized.type === "blur" || normalized.type === "pixelate")) {
+      let { x: nx, y: ny, width, height } = normalized;
+      if (width < 0) { nx += width; width = -width; }
+      if (height < 0) { ny += height; height = -height; }
+      normalized = { ...normalized, x: nx, y: ny, width, height } as Shape;
+    }
+    liveShapeRef.current = normalized;
+
+    // Throttle Zustand writes to once per animation frame to keep drawing smooth.
+    if (!rafScheduledRef.current) {
+      rafScheduledRef.current = true;
+      requestAnimationFrame(() => {
+        rafScheduledRef.current = false;
+        if (liveShapeRef.current) {
+          updateShape(liveShapeRef.current.id, liveShapeRef.current);
+        }
+      });
+    }
+  }, [updateShape]);
+
+  const onMouseUp = useCallback(() => {
     const id = drawingId.current;
     drawingId.current = null;
     if (!id) return;
-    // Normalize negative-size rects/redactions and drop empty shapes.
-    const shape = useEditorStore.getState().shapes.find((s) => s.id === id);
+
+    // Use the live shape ref as source of truth (may be fresher than the store).
+    const live = liveShapeRef.current;
+    liveShapeRef.current = null;
+    const shape = (live && live.id === id) ? live : useEditorStore.getState().shapes.find((s) => s.id === id);
     if (!shape) return;
+
     if ("width" in shape && (shape.type === "rect" || shape.type === "ellipse" || shape.type === "blur" || shape.type === "pixelate")) {
       let { x, y, width, height } = shape;
       if (width < 0) { x += width; width = -width; }
@@ -225,10 +259,10 @@ export function Editor({ capture, onBack }: Props) {
         removeSelected();
         return;
       }
-      updateShape(id, { x, y, width, height } as Partial<Shape>);
+      updateShapeCommit(id, { x, y, width, height } as Partial<Shape>);
     }
     select(id);
-  };
+  }, [removeSelected, select, updateShapeCommit]);
 
   const editingShape = editingText
     ? (shapes.find((s) => s.id === editingText.id) as Extract<Shape, { type: "text" }> | undefined)
@@ -325,11 +359,11 @@ export function Editor({ capture, onBack }: Props) {
   const stageH = useMemo(() => capture.height * scale, [capture.height, scale]);
 
   return (
-    <div className="flex h-full flex-col">
-      <EditorToolbar onBack={onBack} onCopy={onCopy} onSave={onSave} busy={busy} />
+    <div className="flex h-full">
+      <LeftToolbar onBack={onBack} onCopy={onCopy} onSave={onSave} busy={busy} />
       <div
         ref={containerRef}
-        className="relative flex flex-1 items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_center,#1a1b2e_0%,#0a0a12_100%)]"
+        className="relative z-10 flex flex-1 items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_center,#1a1b2e_0%,#0a0a12_100%)]"
       >
         <div
           className="relative"
@@ -426,10 +460,13 @@ export function Editor({ capture, onBack }: Props) {
           )}
         </div>
 
-        <div className="pointer-events-none absolute bottom-3 right-4 rounded-md bg-bg-elevated/80 px-2.5 py-1 text-xs text-fg-subtle backdrop-blur">
+        <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md bg-bg-elevated/80 px-2.5 py-1 text-xs text-fg-subtle backdrop-blur">
           {capture.width}×{capture.height} · {Math.round(scale * 100)}%
         </div>
       </div>
+      <RightToolbar />
     </div>
   );
 }
+
+export default Editor;

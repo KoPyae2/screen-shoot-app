@@ -1,3 +1,4 @@
+import * as React from "react";
 import Konva from "konva";
 import {
   Arrow,
@@ -23,7 +24,7 @@ function dragPatch(e: Konva.KonvaEventObject<DragEvent>) {
   return { x: e.target.x(), y: e.target.y() };
 }
 
-export function ShapeNode({
+export const ShapeNode = React.memo(function ShapeNode({
   shape,
   image,
   onSelect,
@@ -205,4 +206,4 @@ export function ShapeNode({
     default:
       return null;
   }
-}
+});

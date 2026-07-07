@@ -7,6 +7,8 @@
   "sidebar": {
     "recent": "Recientes",
     "clear": "Limpiar",
+    "clearAllConfirm": "¿Borrar todas las capturas?",
+    "clearAllConfirmDesc": "Se eliminarán permanentemente todas tus capturas guardadas. Esta acción no se puede deshacer.",
     "noScreenshots": "Sin capturas aún.",
     "yourCapturesWillAppear": "Las capturas guardadas aparecerán aquí."
   },
