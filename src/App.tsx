@@ -8,7 +8,8 @@ import { Header } from "./components/ui/Header";
 import { onCaptureReady, onCaptureRequest, onHistoryChanged } from "./lib/events";
 import { useCapture } from "./hooks/useCapture";
 import { useHistoryStore } from "./store/historyStore";
-import { listMonitors } from "./lib/commands";
+import { failedShortcuts } from "./lib/commands";
+import { toast } from "./components/ui/Toast";
 import type { CaptureResult } from "./lib/types";
 
 type View = "capture" | "editor";
@@ -42,13 +43,12 @@ export default function App() {
     };
   }, []);
 
-  // Global-shortcut / tray capture requests.
+  // Global-shortcut / tray capture requests. `fullscreen()` with no argument
+  // already resolves the primary monitor and reports errors via toast.
   useEffect(() => {
-    const un = onCaptureRequest(async (kind) => {
+    const un = onCaptureRequest((kind) => {
       if (kind === "fullscreen") {
-        const monitors = await listMonitors().catch(() => []);
-        const primary = monitors.find((m) => m.is_primary) ?? monitors[0];
-        if (primary) fullscreen(primary.id);
+        fullscreen();
       } else if (kind === "region") {
         region();
       } else if (kind === "window") {
@@ -59,6 +59,17 @@ export default function App() {
       un.then((f) => f());
     };
   }, [fullscreen, region, activeWindow]);
+
+  // Warn once if any global hotkey couldn't be registered (e.g. taken by
+  // another app) — otherwise they silently do nothing.
+  useEffect(() => {
+    failedShortcuts()
+      .then((keys) => {
+        if (keys.length) toast.error(t("toast.shortcutError", { keys: keys.join(", ") }));
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openFromHistory = (c: CaptureResult) => {
     setCapture(c);

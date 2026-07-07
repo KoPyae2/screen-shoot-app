@@ -7,8 +7,8 @@ import * as React from "react";
 interface Props {
   shape: RedactShape;
   image: HTMLImageElement | undefined;
-  onSelect: () => void;
-  onChange: (patch: Partial<RedactShape>) => void;
+  onSelect: (id: string) => void;
+  onChange: (id: string, patch: Partial<RedactShape>) => void;
   draggable: boolean;
 }
 
@@ -51,31 +51,21 @@ export const RedactNode = React.memo(function RedactNode({
       }
       blurRadius={shape.type === "blur" ? shape.strength : 0}
       pixelSize={shape.type === "pixelate" ? Math.max(2, shape.strength) : 1}
-      onMouseDown={onSelect}
-      onTap={onSelect}
+      onMouseDown={() => onSelect(shape.id)}
+      onTap={() => onSelect(shape.id)}
       onDragEnd={(e) => {
-        const node = e.target;
-        const nx = node.x();
-        const ny = node.y();
-        onChange({ x: nx, y: ny, crop: { x: nx, y: ny, width: w, height: h } } as Partial<RedactShape>);
+        // The render derives `crop` from x/y, so only geometry goes in the store.
+        onChange(shape.id, { x: e.target.x(), y: e.target.y() });
       }}
       onTransformEnd={(e) => {
         const node = e.target as Konva.Image;
-        const sx = node.scaleX();
-        const sy = node.scaleY();
-        const nw = Math.max(4, node.width() * sx);
-        const nh = Math.max(4, node.height() * sy);
+        const nw = Math.max(4, node.width() * node.scaleX());
+        const nh = Math.max(4, node.height() * node.scaleY());
         const nx = node.x();
         const ny = node.y();
         node.scaleX(1);
         node.scaleY(1);
-        onChange({
-          x: nx,
-          y: ny,
-          width: nw,
-          height: nh,
-          crop: { x: nx, y: ny, width: nw, height: nh },
-        } as Partial<RedactShape>);
+        onChange(shape.id, { x: nx, y: ny, width: nw, height: nh });
       }}
     />
   );

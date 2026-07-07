@@ -4,12 +4,14 @@
 
 **A modern screenshot studio for creators and developers**
 
-![MIT License](https://img.shields.io/badge/license-MIT-blueviolet)
+[![CI](https://github.com/KoPyae2/screen-shoot-app/actions/workflows/ci.yml/badge.svg)](https://github.com/KoPyae2/screen-shoot-app/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/KoPyae2/screen-shoot-app?include_prereleases&color=7c3aed)](https://github.com/KoPyae2/screen-shoot-app/releases)
+[![MIT License](https://img.shields.io/badge/license-MIT-blueviolet)](LICENSE)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-7c3aed)
 ![React 19](https://img.shields.io/badge/React-19-06b6d4)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-7c3aed)
 
-[Features](#key-features) · [Screenshots](#screenshots) · [Getting Started](#getting-started) · [Tech Stack](#tech-stack) · [Contributing](#contributing) · [License](#license)
+[Features](#key-features) · [Screenshots](#screenshots) · [Download](#download) · [Getting Started](#getting-started) · [Tech Stack](#tech-stack) · [Contributing](#contributing) · [License](#license)
 
 ---
 
@@ -23,16 +25,16 @@
     <td align="center"><strong>Light Mode</strong></td>
   </tr>
   <tr>
-    <td><img src="public/screenshoot_dark.png" alt="Snapture dark mode" width="100%"></td>
-    <td><img src="public/screenshoot_light.png" alt="Snapture light mode" width="100%"></td>
+    <td><img src="docs/images/screenshoot_dark.png" alt="Snapture dark mode" width="100%"></td>
+    <td><img src="docs/images/screenshoot_light.png" alt="Snapture light mode" width="100%"></td>
   </tr>
   <tr>
     <td align="center"><strong>Editor (Dark)</strong></td>
     <td align="center"><strong>Editor (Light)</strong></td>
   </tr>
   <tr>
-    <td><img src="public/screenshoot_edit_dark.png" alt="Editor dark mode" width="100%"></td>
-    <td><img src="public/screenshoot_edit_light.png" alt="Editor light mode" width="100%"></td>
+    <td><img src="docs/images/screenshoot_edit_dark.png" alt="Editor dark mode" width="100%"></td>
+    <td><img src="docs/images/screenshoot_edit_light.png" alt="Editor light mode" width="100%"></td>
   </tr>
 </table>
 
@@ -75,6 +77,14 @@ Switch languages on the fly via the header dropdown. Currently ships with Englis
 | i18n | [i18next](https://www.i18next.com/) |
 | Screen Capture | [`xcap`](https://crates.io/crates/xcap) |
 | Image Processing | [`image`](https://crates.io/crates/image) |
+
+## Download
+
+Grab the latest installer for your platform from the [**Releases page**](https://github.com/KoPyae2/screen-shoot-app/releases):
+
+- **Windows** — `.msi` or `-setup.exe` (NSIS)
+- **macOS** — `.dmg`
+- **Linux** — `.deb`, `.rpm`, or `.AppImage`
 
 ## Getting Started
 
@@ -122,16 +132,14 @@ Platform-specific builds are available via `npm run build:windows`, `npm run bui
 
 ## Contributing
 
-Contributions are welcome and appreciated! Here's how you can help:
+Contributions are welcome and appreciated! See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, project layout, and PR guidelines.
 
-- **🐛 Report bugs** — Open an issue with a clear description and reproduction steps.
-- **💡 Suggest features** — Open a discussion or feature request.
+- **🐛 Report bugs** — [Open a bug report](https://github.com/KoPyae2/screen-shoot-app/issues/new?template=bug_report.yml) with reproduction steps.
+- **💡 Suggest features** — [Open a feature request](https://github.com/KoPyae2/screen-shoot-app/issues/new?template=feature_request.yml).
 - **🔧 Submit pull requests** — Fix bugs, improve the UI, or add new functionality.
-- **🌍 Add a translation** — Creating a new language is as simple as adding a JSON file:
-  1. Copy `src/i18n/locales/en.json` to `src/i18n/locales/your-lang-code.json`
-  2. Translate the values (keep the keys unchanged)
-  3. Import & register it in `src/i18n/i18n.ts`
-  4. Add the language entry in `src/components/ui/Header.tsx` (the `LANGUAGES` array)
+- **🌍 Add a translation** — Adding a new language is as simple as adding a JSON file; see the [translation guide](CONTRIBUTING.md#adding-a-translation).
+
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). To report a security vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## License
 

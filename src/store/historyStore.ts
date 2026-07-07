@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { HistoryEntry } from "../lib/types";
 import { historyClear, historyDelete, historyList } from "../lib/commands";
+import { toast } from "../components/ui/Toast";
 
 interface HistoryState {
   entries: HistoryEntry[];
@@ -19,11 +20,19 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }
   },
   remove: async (id) => {
-    await historyDelete(id);
+    try {
+      await historyDelete(id);
+    } catch (e) {
+      toast.error(String(e));
+    }
     await get().refresh();
   },
   clear: async () => {
-    await historyClear();
+    try {
+      await historyClear();
+    } catch (e) {
+      toast.error(String(e));
+    }
     await get().refresh();
   },
 }));

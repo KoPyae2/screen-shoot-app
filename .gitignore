@@ -17,6 +17,15 @@ dist-ssr
 
 # Rust / Tauri build artifacts
 src-tauri/target
+src-tauri/gen
+
+# Release binaries (published via GitHub Releases, not committed)
+release-assets/
+
+# AI assistant tooling (personal dev setup)
+.claude/
+.agents/
+skills-lock.json
 
 # Editor directories and files
 .vscode/*

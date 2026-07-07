@@ -16,6 +16,18 @@ use overlay::RegionStore;
 /// Last foreground window HWND, recorded by the shortcut handler before focusing Snapture.
 pub(crate) static ACTIVE_WINDOW_TARGET: Mutex<Option<u32>> = Mutex::new(None);
 
+/// Human-readable names of global shortcuts that failed to register (e.g.
+/// already taken by another app). The frontend queries this once on startup
+/// and warns the user — `eprintln!` alone is invisible in a windowed release
+/// build, so failures would otherwise be silent dead hotkeys.
+#[derive(Default)]
+pub struct ShortcutFailures(pub Mutex<Vec<String>>);
+
+#[tauri::command]
+fn failed_shortcuts(state: tauri::State<'_, ShortcutFailures>) -> Vec<String> {
+    state.0.lock().map(|v| v.clone()).unwrap_or_default()
+}
+
 /// The three quick-capture global shortcuts.
 fn shortcuts() -> (Shortcut, Shortcut, Shortcut) {
     let mods = Modifiers::CONTROL | Modifiers::SHIFT;
@@ -29,7 +41,6 @@ fn shortcuts() -> (Shortcut, Shortcut, Shortcut) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
@@ -50,21 +61,17 @@ pub fn run() {
                     };
                     // Record foreground window BEFORE focusing Snapture
                     if kind == "window" {
-                        let _ = ACTIVE_WINDOW_TARGET.lock().map(|mut t| {
-                            *t = crate::capture::foreground_window_id()
-                        });
+                        let _ = ACTIVE_WINDOW_TARGET
+                            .lock()
+                            .map(|mut t| *t = crate::capture::foreground_window_id());
                     }
                     if let Some(w) = app.get_webview_window("main") {
                         // Don't yank focus back to main if a region overlay is
                         // currently visible (mid-selection). Otherwise main would
                         // pop up underneath the overlay.
-                        let overlay_active = app
-                            .webview_windows()
-                            .iter()
-                            .any(|(l, win)| {
-                                l.starts_with("overlay-")
-                                    && win.is_visible().unwrap_or(false)
-                            });
+                        let overlay_active = app.webview_windows().iter().any(|(l, win)| {
+                            l.starts_with("overlay-") && win.is_visible().unwrap_or(false)
+                        });
                         if !overlay_active {
                             let _ = w.show();
                             let _ = w.set_focus();
@@ -77,20 +84,43 @@ pub fn run() {
                 .build(),
         )
         .manage(RegionStore::default())
+        .manage(ShortcutFailures::default())
+        .on_window_event(|window, event| {
+            // If an overlay window is closed directly (Alt+F4 instead of Esc),
+            // treat it as a cancelled region capture: without this the main
+            // window stays hidden forever and the frozen full-screen frames
+            // (tens of MB per monitor) are never released.
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label().starts_with("overlay-") {
+                    api.prevent_close();
+                    let _ = overlay::cancel_region_capture(window.app_handle().clone());
+                } else if window.label() == "main" {
+                    // Overlay windows are kept alive (hidden) for reuse, so
+                    // they would keep the process running after the main
+                    // window closes — exit explicitly instead.
+                    window.app_handle().exit(0);
+                }
+            }
+        })
         .setup(|app| {
             let handle = app.handle().clone();
             imaging::clean_sessions(&handle);
 
             let (region_key, full_key, win_key) = shortcuts();
             let gs = handle.global_shortcut();
-            if let Err(e) = gs.register(region_key) {
-                eprintln!("shortcut register region failed: {e}");
+            let mut failures = Vec::new();
+            for (name, key) in [
+                ("Ctrl+Shift+1", region_key),
+                ("Ctrl+Shift+2", full_key),
+                ("Ctrl+Shift+3", win_key),
+            ] {
+                if let Err(e) = gs.register(key) {
+                    eprintln!("shortcut register {name} failed: {e}");
+                    failures.push(name.to_string());
+                }
             }
-            if let Err(e) = gs.register(full_key) {
-                eprintln!("shortcut register fullscreen failed: {e}");
-            }
-            if let Err(e) = gs.register(win_key) {
-                eprintln!("shortcut register window failed: {e}");
+            if let Ok(mut slot) = app.state::<ShortcutFailures>().0.lock() {
+                *slot = failures;
             }
             Ok(())
         })
@@ -106,13 +136,13 @@ pub fn run() {
             overlay::region_image_bytes,
             overlay::finish_region_capture,
             overlay::cancel_region_capture,
-            clipboard::copy_image_to_clipboard,
             clipboard::copy_bytes_to_clipboard,
             saving::save_image_bytes,
             imaging::read_image_data_url,
             history::history_list,
             history::history_delete,
             history::history_clear,
+            failed_shortcuts,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

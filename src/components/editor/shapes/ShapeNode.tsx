@@ -13,30 +13,32 @@ import { RedactNode } from "./RedactNode";
 interface Props {
   shape: Shape;
   image: HTMLImageElement | undefined;
-  onSelect: () => void;
-  onChange: (patch: Partial<Shape>) => void;
+  // Callbacks receive the shape id so the parent can pass the same stable
+  // function to every node — otherwise React.memo never skips a render.
+  onSelect: (id: string) => void;
+  onChange: (id: string, patch: Partial<Shape>) => void;
   onTextEdit: (id: string) => void;
   draggable: boolean;
-}
-
-/** Common drag handler producing an {x,y} patch. */
-function dragPatch(e: Konva.KonvaEventObject<DragEvent>) {
-  return { x: e.target.x(), y: e.target.y() };
 }
 
 export const ShapeNode = React.memo(function ShapeNode({
   shape,
   image,
   onSelect,
-  onChange,
+  onChange: onChangeById,
   onTextEdit,
   draggable,
 }: Props) {
+  const select = () => onSelect(shape.id);
+  const onChange = (patch: Partial<Shape>) => onChangeById(shape.id, patch);
+  /** Common drag handler producing an {x,y} patch. */
+  const dragPatch = (e: Konva.KonvaEventObject<DragEvent>) =>
+    onChange({ x: e.target.x(), y: e.target.y() } as Partial<Shape>);
   const common = {
     id: shape.id,
     draggable,
-    onMouseDown: onSelect,
-    onTap: onSelect,
+    onMouseDown: select,
+    onTap: select,
   };
 
   switch (shape.type) {
@@ -75,7 +77,7 @@ export const ShapeNode = React.memo(function ShapeNode({
           stroke={shape.stroke}
           strokeWidth={shape.strokeWidth}
           cornerRadius={4}
-          onDragEnd={(e) => onChange(dragPatch(e) as Partial<Shape>)}
+          onDragEnd={dragPatch}
           onTransformEnd={(e) => {
             const node = e.target as Konva.Rect;
             const nw = Math.max(4, node.width() * node.scaleX());
@@ -176,7 +178,7 @@ export const ShapeNode = React.memo(function ShapeNode({
           fill={shape.stroke}
           onDblClick={() => onTextEdit(shape.id)}
           onDblTap={() => onTextEdit(shape.id)}
-          onDragEnd={(e) => onChange(dragPatch(e) as Partial<Shape>)}
+          onDragEnd={dragPatch}
           onTransformEnd={(e) => {
             const node = e.target as Konva.Text;
             const scale = node.scaleX();
@@ -198,7 +200,7 @@ export const ShapeNode = React.memo(function ShapeNode({
           shape={shape}
           image={image}
           onSelect={onSelect}
-          onChange={onChange as (patch: Partial<typeof shape>) => void}
+          onChange={onChangeById}
           draggable={draggable}
         />
       );

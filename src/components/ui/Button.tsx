@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
 
-type Variant = "primary" | "ghost" | "outline" | "danger" | "subtle";
+type Variant = "primary" | "ghost" | "outline" | "danger" | "destructive" | "subtle";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const variants: Record<Variant, string> = {
@@ -10,6 +10,8 @@ const variants: Record<Variant, string> = {
   ghost: "bg-transparent text-fg-muted hover:bg-panel-2 hover:text-fg",
   outline: "border border-border bg-transparent text-fg hover:bg-panel-2",
   danger: "bg-danger/15 text-danger hover:bg-danger/25",
+  destructive:
+    "bg-danger text-white hover:bg-[#e13e59] shadow-[0_6px_20px_-6px_rgba(240,85,109,0.55)] focus-visible:ring-danger/60",
   subtle: "bg-panel-2 text-fg hover:bg-border",
 };
 
@@ -24,18 +26,16 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
-  active?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "ghost", size = "md", active, ...props }, ref) => (
+  ({ className, variant = "ghost", size = "md", ...props }, ref) => (
     <button
       ref={ref}
       className={cn(
         "inline-flex select-none items-center rounded-md font-medium transition-all duration-150 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/60",
         variants[variant],
         sizes[size],
-        active && "bg-brand-soft text-brand ring-1 ring-brand/40",
         className,
       )}
       {...props}

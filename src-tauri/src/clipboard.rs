@@ -8,17 +8,8 @@ use crate::imaging;
 
 /// Write an RGBA image to the system clipboard (as a bitmap).
 pub fn copy_rgba(app: &AppHandle, img: &RgbaImage) -> Result<(), String> {
-    let (w, h) = (img.width(), img.height());
-    let raw = img.clone().into_raw();
-    let ti = Image::new_owned(raw, w, h);
+    let ti = Image::new(img.as_raw(), img.width(), img.height());
     app.clipboard().write_image(&ti).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub async fn copy_image_to_clipboard(app: AppHandle, path: String) -> Result<(), String> {
-    let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-    let img = imaging::decode_bytes(&bytes)?;
-    copy_rgba(&app, &img)
 }
 
 /// Copy an edited image from the frontend. `b64` is a base64-encoded PNG —

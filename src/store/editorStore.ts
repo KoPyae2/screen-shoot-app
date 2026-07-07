@@ -94,6 +94,7 @@ interface EditorState {
   updateShape: (id: string, patch: Partial<Shape>) => void; // no history (live drag)
   updateShapeCommit: (id: string, patch: Partial<Shape>) => void;
   removeSelected: () => void;
+  discardShape: (id: string) => void; // drop a just-added shape without an undo step
   undo: () => void;
   redo: () => void;
 }
@@ -124,7 +125,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   commit: (updater) => {
     const { shapes, past } = get();
     set({
-      past: [...past.slice(-HISTORY_CAP), shapes],
+      past: [...past.slice(-(HISTORY_CAP - 1)), shapes],
       future: [],
       shapes: updater(shapes),
     });
@@ -152,6 +153,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ selectedId: null });
   },
 
+  // For degenerate shapes (zero-drag clicks, cancelled empty text): removes
+  // the shape AND pops the snapshot its addShape pushed, so a stray click
+  // doesn't cost the user two undo steps.
+  discardShape: (id) => {
+    const { shapes, past, selectedId } = get();
+    set({
+      shapes: shapes.filter((s) => s.id !== id),
+      past: past.slice(0, -1),
+      selectedId: selectedId === id ? null : selectedId,
+    });
+  },
+
   undo: () => {
     const { past, future, shapes } = get();
     if (past.length === 0) return;
@@ -169,7 +182,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (future.length === 0) return;
     const next = future[0];
     set({
-      past: [...past, shapes],
+      past: [...past.slice(-(HISTORY_CAP - 1)), shapes],
       future: future.slice(1),
       shapes: next,
       selectedId: null,

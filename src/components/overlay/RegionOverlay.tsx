@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import type { RegionInitPayload } from "../../lib/types";
-import { cancelRegionCapture, finishRegionCapture } from "../../lib/commands";
+import {
+  cancelRegionCapture,
+  finishRegionCapture,
+  regionImageBytes,
+  regionPayload,
+} from "../../lib/commands";
 
 interface Rect {
   x: number;
@@ -23,7 +27,7 @@ export function RegionOverlay() {
 
   const fetchPayload = async () => {
     const label = getCurrentWindow().label;
-    const p = await invoke<RegionInitPayload | null>("region_payload", { label });
+    const p = await regionPayload(label);
     if (!p) return;
     setPayload(p);
     setRect(null);
@@ -34,7 +38,7 @@ export function RegionOverlay() {
     // Skips PNG encode + disk write + asset-protocol fetch + PNG decode
     // entirely. The bytes paint straight to a canvas via putImageData.
     try {
-      const buf = await invoke<ArrayBuffer>("region_image_bytes", { label });
+      const buf = await regionImageBytes(label);
       const canvas = canvasRef.current;
       if (!canvas) return;
       canvas.width = p.phys_w;
@@ -58,17 +62,18 @@ export function RegionOverlay() {
   // When the backend reuses this window for a new capture it emits
   // "region-refresh"; reload the frozen image and reset the selection.
   useEffect(() => {
-    let un: UnlistenFn | undefined;
-    listen("region-refresh", () => fetchPayload()).then((f) => (un = f));
+    // Hold the promise, not the resolved fn: if the component unmounts before
+    // listen() resolves, the unsubscriber would be lost and the listener leaked.
+    const un = listen("region-refresh", () => fetchPayload());
     return () => {
-      un?.();
+      un.then((f) => f());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") cancelRegionCapture();
+      if (e.key === "Escape") cancelRegionCapture().catch(() => {});
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -95,7 +100,11 @@ export function RegionOverlay() {
   const onMouseUp = async () => {
     setDragging(false);
     start.current = null;
-    if (!payload || !rect || rect.w < 4 || rect.h < 4) return;
+    if (!payload || !rect || rect.w < 4 || rect.h < 4) {
+      // Too small to capture — clear the leftover selection box.
+      setRect(null);
+      return;
+    }
     // Map CSS pixels → physical image pixels using the real rendered viewport
     // size vs. the frozen image size. This is exact regardless of DPI scaling.
     const rx = payload.phys_w / window.innerWidth;

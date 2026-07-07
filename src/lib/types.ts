@@ -36,15 +36,12 @@ export interface HistoryEntry {
   width: number;
   height: number;
   created_at: string;
-  note: string | null;
 }
 
-/** Emitted to the main window when a region overlay produces a crop. */
+/** Metadata for the frozen frame shown by a region overlay window. */
 export interface RegionInitPayload {
   monitor_id: number;
   phys_w: number;
   phys_h: number;
   scale_factor: number;
 }
-
-export type ImageFormat = "png" | "jpg";

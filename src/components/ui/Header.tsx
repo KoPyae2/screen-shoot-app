@@ -6,7 +6,7 @@ import { Check, ChevronDown, Globe, Minus, Moon, Square, Sun, X } from "lucide-r
 import { useThemeStore } from "../../store/themeStore";
 const LANGUAGES = [
   { code: "en", label: "English", short: "EN" },
-  { code: "ch", label: "中文", short: "中文" },
+  { code: "zh", label: "中文", short: "中文" },
   { code: "es", label: "Español", short: "ES" },
   { code: "hi", label: "हिन्दी", short: "HI" },
   { code: "my", label: "မြန်မာဘာသာ", short: "မြန်" },
@@ -33,8 +33,15 @@ export function Header() {
         setLangOpen(false);
       }
     };
+    // The menu's fixed position is computed from the button's rect at render
+    // time, so close it on resize rather than let it detach from the button.
+    const onResize = () => setLangOpen(false);
     document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    window.addEventListener("resize", onResize);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      window.removeEventListener("resize", onResize);
+    };
   }, [langOpen]);
 
   const currentLang = LANGUAGES.find((l) => i18n.language.startsWith(l.code)) ?? LANGUAGES[0];

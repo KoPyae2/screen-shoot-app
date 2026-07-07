@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use image::RgbaImage;
 use tauri::{AppHandle, Emitter, Manager};
 use xcap::{Monitor, Window};
@@ -11,6 +13,15 @@ pub fn hide_main(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.hide();
     }
+}
+
+/// Hide the main window and give the compositor a moment to actually remove
+/// it from screen before pixels are read — otherwise the capture can include
+/// Snapture's own window mid-hide.
+async fn hide_main_settled(app: &AppHandle) {
+    hide_main(app);
+    let _ = tauri::async_runtime::spawn_blocking(|| std::thread::sleep(Duration::from_millis(60)))
+        .await;
 }
 
 pub fn show_main(app: &AppHandle) {
@@ -34,10 +45,17 @@ pub fn window_to_rgba(win: &Window) -> Result<RgbaImage, String> {
 
 /// Copy to clipboard, persist a session PNG, auto-store in history, and notify
 /// the main window. Every capture is added to Recent automatically.
-fn finalize(app: &AppHandle, img: RgbaImage) -> Result<CaptureResult, String> {
-    let _ = clipboard::copy_rgba(app, &img);
-    let cap = imaging::save_session_png(app, &img)?;
-    let _ = history::store_image(app, &img, None, None);
+/// The image is PNG-encoded exactly once and the bytes are shared by the
+/// session file and the history file.
+pub(crate) fn finalize(app: &AppHandle, img: RgbaImage) -> Result<CaptureResult, String> {
+    if let Err(e) = clipboard::copy_rgba(app, &img) {
+        eprintln!("clipboard copy failed: {e}");
+    }
+    let png = imaging::encode_png_fast(&img)?;
+    let cap = imaging::save_session_png_bytes(app, &png, img.width(), img.height())?;
+    if let Err(e) = history::store_image(app, &img, Some(&png)) {
+        eprintln!("history store failed: {e}");
+    }
     let _ = app.emit("capture-ready", &cap);
     let _ = app.emit("history-changed", ());
     Ok(cap)
@@ -89,11 +107,8 @@ pub async fn list_windows() -> Result<Vec<WindowInfo>, String> {
 }
 
 #[tauri::command]
-pub async fn capture_monitor(
-    app: AppHandle,
-    monitor_id: u32,
-) -> Result<CaptureResult, String> {
-    hide_main(&app);
+pub async fn capture_monitor(app: AppHandle, monitor_id: u32) -> Result<CaptureResult, String> {
+    hide_main_settled(&app).await;
     let img = tauri::async_runtime::spawn_blocking(move || -> Result<RgbaImage, String> {
         let monitors = Monitor::all().map_err(|e| e.to_string())?;
         let m = monitors
@@ -103,14 +118,17 @@ pub async fn capture_monitor(
         monitor_to_rgba(&m)
     })
     .await
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| e.to_string())
+    .and_then(|r| r);
+    // Restore the window on every path — including errors — so a failed
+    // capture never leaves the app invisible.
     show_main(&app);
     finalize(&app, img?)
 }
 
 #[tauri::command]
 pub async fn capture_all_monitors(app: AppHandle) -> Result<Vec<CaptureResult>, String> {
-    hide_main(&app);
+    hide_main_settled(&app).await;
     let imgs = tauri::async_runtime::spawn_blocking(move || -> Result<Vec<RgbaImage>, String> {
         let monitors = Monitor::all().map_err(|e| e.to_string())?;
         let mut out = Vec::new();
@@ -120,16 +138,22 @@ pub async fn capture_all_monitors(app: AppHandle) -> Result<Vec<CaptureResult>, 
         Ok(out)
     })
     .await
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| e.to_string())
+    .and_then(|r| r);
     show_main(&app);
     let imgs = imgs?;
     let mut results = Vec::new();
     for (idx, img) in imgs.into_iter().enumerate() {
         if idx == 0 {
-            let _ = clipboard::copy_rgba(&app, &img);
+            if let Err(e) = clipboard::copy_rgba(&app, &img) {
+                eprintln!("clipboard copy failed: {e}");
+            }
         }
-        let cap = imaging::save_session_png(&app, &img)?;
-        let _ = history::store_image(&app, &img, None, None);
+        let png = imaging::encode_png_fast(&img)?;
+        let cap = imaging::save_session_png_bytes(&app, &png, img.width(), img.height())?;
+        if let Err(e) = history::store_image(&app, &img, Some(&png)) {
+            eprintln!("history store failed: {e}");
+        }
         if idx == 0 {
             let _ = app.emit("capture-ready", &cap);
         }
@@ -140,11 +164,8 @@ pub async fn capture_all_monitors(app: AppHandle) -> Result<Vec<CaptureResult>, 
 }
 
 #[tauri::command]
-pub async fn capture_window(
-    app: AppHandle,
-    window_id: u32,
-) -> Result<CaptureResult, String> {
-    hide_main(&app);
+pub async fn capture_window(app: AppHandle, window_id: u32) -> Result<CaptureResult, String> {
+    hide_main_settled(&app).await;
     let img = tauri::async_runtime::spawn_blocking(move || -> Result<RgbaImage, String> {
         let windows = Window::all().map_err(|e| e.to_string())?;
         let w = windows
@@ -154,7 +175,8 @@ pub async fn capture_window(
         window_to_rgba(&w)
     })
     .await
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| e.to_string())
+    .and_then(|r| r);
     show_main(&app);
     finalize(&app, img?)
 }
@@ -162,11 +184,14 @@ pub async fn capture_window(
 #[tauri::command]
 pub async fn capture_active_window(app: AppHandle) -> Result<CaptureResult, String> {
     // 1. Try the HWND stored by the shortcut handler (before it focused Snapture)
-    let stored = crate::ACTIVE_WINDOW_TARGET.lock().ok().and_then(|mut t| t.take());
+    let stored = crate::ACTIVE_WINDOW_TARGET
+        .lock()
+        .ok()
+        .and_then(|mut t| t.take());
     // 2. Fall back to current foreground window
     let target = stored.or_else(foreground_window_id);
 
-    hide_main(&app);
+    hide_main_settled(&app).await;
 
     let img = tauri::async_runtime::spawn_blocking(move || -> Result<RgbaImage, String> {
         let windows = Window::all().map_err(|e| e.to_string())?;
@@ -174,7 +199,10 @@ pub async fn capture_active_window(app: AppHandle) -> Result<CaptureResult, Stri
         // If we have a target HWND, try to find it in the window list.
         // If it's not found (e.g. it was our own hidden window), fall through.
         if let Some(id) = target {
-            if let Some(w) = windows.iter().find(|w| w.id().map(|i| i == id).unwrap_or(false)) {
+            if let Some(w) = windows
+                .iter()
+                .find(|w| w.id().map(|i| i == id).unwrap_or(false))
+            {
                 return window_to_rgba(w);
             }
         }
@@ -190,10 +218,11 @@ pub async fn capture_active_window(app: AppHandle) -> Result<CaptureResult, Stri
                     && !w.title().unwrap_or_default().is_empty()
             })
             .ok_or_else(|| "no active window found".to_string())
-            .and_then(|w| window_to_rgba(w))
+            .and_then(window_to_rgba)
     })
     .await
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| e.to_string())
+    .and_then(|r| r);
     show_main(&app);
     finalize(&app, img?)
 }

@@ -5,7 +5,6 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "opener:default",
     "core:window:allow-hide",
     "core:window:allow-show",
     "core:window:allow-set-focus",
@@ -14,10 +13,6 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-is-maximized",
     "core:window:allow-start-dragging",
-    "core:webview:allow-create-webview-window",
-    "core:event:default",
-    "clipboard-manager:allow-write-image",
-    "dialog:allow-save",
-    "global-shortcut:default"
+    "core:event:default"
   ]
 }

@@ -2,25 +2,27 @@
   "app": {
     "name": "Snapture",
     "tagline": "Estudio de capturas",
-    "version": "v1.1.0"
+    "version": "v1.2.0"
   },
   "sidebar": {
     "recent": "Recientes",
     "clear": "Limpiar",
     "clearAllConfirm": "¿Borrar todas las capturas?",
-    "clearAllConfirmDesc": "Se eliminarán permanentemente todas tus capturas guardadas. Esta acción no se puede deshacer.",
-    "noScreenshots": "Sin capturas aún.",
-    "yourCapturesWillAppear": "Las capturas guardadas aparecerán aquí."
+    "clearAllConfirmDesc": "Esto eliminará permanentemente todas tus capturas guardadas. Esta acción no se puede deshacer.",
+    "captureCount_one": "Se eliminará {{count}} captura",
+    "captureCount_other": "Se eliminarán {{count}} capturas",
+    "noScreenshots": "Aún no hay capturas.",
+    "yourCapturesWillAppear": "Tus capturas guardadas aparecerán aquí."
   },
   "capture": {
     "title": "Capturar",
     "description": "Haz una captura: se copiará automáticamente al portapapeles y se abrirá para editar.",
     "fullScreen": "Pantalla completa",
     "fullScreenDesc": "Captura toda la pantalla",
-    "fullScreenHotkey": "Ctrl+⇧+1",
+    "fullScreenHotkey": "Ctrl+⇧+2",
     "region": "Región",
     "regionDesc": "Arrastra para seleccionar un área",
-    "regionHotkey": "Ctrl+⇧+2",
+    "regionHotkey": "Ctrl+⇧+1",
     "window": "Ventana",
     "windowDesc": "Elige una ventana abierta",
     "windowHotkey": "Ctrl+⇧+3",
@@ -40,22 +42,22 @@
   },
   "editor": {
     "backToCapture": "Volver a capturar",
-    "selectMove": "Seleccionar / Mover (V)",
-    "arrow": "Flecha (A)",
-    "rectangle": "Rectángulo (R)",
-    "ellipse": "Elipse (O)",
-    "freeDraw": "Dibujo libre (P)",
-    "text": "Texto (T)",
-    "highlighter": "Resaltador (H)",
-    "blur": "Desenfocar (B)",
-    "pixelate": "Pixelar (X)",
+    "selectMove": "Seleccionar / Mover",
+    "arrow": "Flecha",
+    "rectangle": "Rectángulo",
+    "ellipse": "Elipse",
+    "freeDraw": "Dibujo libre",
+    "text": "Texto",
+    "highlighter": "Resaltador",
+    "blur": "Desenfocar",
+    "pixelate": "Pixelar",
     "customColor": "Color personalizado",
     "strength": "Intensidad",
     "font": "Fuente",
     "size": "Tamaño",
-    "undo": "Deshacer (Ctrl+Z)",
-    "redo": "Rehacer (Ctrl+Y)",
-    "delete": "Eliminar seleccionado (Supr)",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "delete": "Eliminar seleccionado",
     "copy": "Copiar",
     "save": "Guardar",
     "copiedToClipboard": "Imagen editada copiada al portapapeles",
@@ -71,9 +73,10 @@
   },
   "toast": {
     "screenCaptured": "Pantalla capturada y copiada al portapapeles",
-    "allMonitorsCaptured": "Todas las pantallas capturadas",
+    "allMonitorsCaptured": "Todos los monitores capturados",
     "windowCaptured": "Ventana capturada y copiada al portapapeles",
-    "activeWindowCaptured": "Ventana activa capturada"
+    "activeWindowCaptured": "Ventana activa capturada",
+    "shortcutError": "Atajos no disponibles (en uso por otra app): {{keys}}"
   },
   "time": {
     "justNow": "ahora mismo",
@@ -82,6 +85,7 @@
     "daysAgo": "hace {{n}}d"
   },
   "ui": {
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "cancel": "Cancelar"
   }
 }

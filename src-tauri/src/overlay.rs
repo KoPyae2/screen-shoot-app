@@ -4,15 +4,19 @@ use std::time::Duration;
 
 use image::RgbaImage;
 use tauri::{
-    ipc::Response, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, State,
-    WebviewUrl, WebviewWindowBuilder,
+    ipc::Response, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, State, WebviewUrl,
+    WebviewWindowBuilder,
 };
 use xcap::Monitor;
 
-use crate::capture::{hide_main, monitor_to_rgba, show_main};
-use crate::clipboard;
-use crate::imaging;
+use crate::capture::{finalize, hide_main, monitor_to_rgba, show_main};
 use crate::models::{CaptureResult, RegionInitPayload};
+
+/// Poison-safe lock: a panic in one command must not permanently break every
+/// subsequent region capture until restart.
+fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+    m.lock().unwrap_or_else(|e| e.into_inner())
+}
 
 /// Per-overlay-window state, keyed by window label ("overlay-{monitor_id}").
 ///
@@ -49,13 +53,25 @@ fn hide_overlays(app: &AppHandle) {
         }
     }
     if let Some(store) = app.try_state::<RegionStore>() {
-        store.payloads.lock().unwrap().clear();
-        store.images.lock().unwrap().clear();
+        lock(&store.payloads).clear();
+        lock(&store.images).clear();
     }
 }
 
 #[tauri::command]
 pub async fn begin_region_capture(app: AppHandle) -> Result<(), String> {
+    let result = begin_region_capture_inner(app.clone()).await;
+    if result.is_err() {
+        // Never leave the app invisible: any failure after hide_main (monitor
+        // enumeration, overlay window build/position/show) restores the main
+        // window and releases the frozen frames.
+        hide_overlays(&app);
+        show_main(&app);
+    }
+    result
+}
+
+async fn begin_region_capture_inner(app: AppHandle) -> Result<(), String> {
     hide_main(&app);
     // Minimal settle so the main window's hide completes before we read pixels.
     tauri::async_runtime::spawn_blocking(|| std::thread::sleep(Duration::from_millis(60)))
@@ -125,7 +141,7 @@ pub async fn begin_region_capture(app: AppHandle) -> Result<(), String> {
             let _ = win.set_focus();
         }
 
-        store.payloads.lock().unwrap().insert(
+        lock(&store.payloads).insert(
             label.clone(),
             RegionInitPayload {
                 monitor_id: f.id,
@@ -134,7 +150,7 @@ pub async fn begin_region_capture(app: AppHandle) -> Result<(), String> {
                 scale_factor: f.scale,
             },
         );
-        store.images.lock().unwrap().insert(label.clone(), f.image.clone());
+        lock(&store.images).insert(label.clone(), f.image.clone());
 
         // Push a refresh event so the (already-mounted) React overlay reloads
         // its canvas from the new in-memory image. First-time windows also
@@ -149,7 +165,7 @@ pub async fn begin_region_capture(app: AppHandle) -> Result<(), String> {
 /// very first creation, where the listener isn't registered yet).
 #[tauri::command]
 pub fn region_payload(label: String, store: State<'_, RegionStore>) -> Option<RegionInitPayload> {
-    store.payloads.lock().unwrap().get(&label).cloned()
+    lock(&store.payloads).get(&label).cloned()
 }
 
 /// Binary fast path: return the raw RGBA bytes for the frozen image via
@@ -157,11 +173,11 @@ pub fn region_payload(label: String, store: State<'_, RegionStore>) -> Option<Re
 /// it directly to a `<canvas>` via `putImageData` — no PNG encode, no PNG
 /// decode, no disk I/O. ~4–6× faster than the old asset-protocol `<img>` path.
 #[tauri::command]
-pub fn region_image_bytes(label: String, store: State<'_, RegionStore>) -> Result<Response, String> {
-    let img = store
-        .images
-        .lock()
-        .unwrap()
+pub fn region_image_bytes(
+    label: String,
+    store: State<'_, RegionStore>,
+) -> Result<Response, String> {
+    let img = lock(&store.images)
         .get(&label)
         .cloned()
         .ok_or_else(|| "no frozen image".to_string())?;
@@ -182,10 +198,7 @@ pub async fn finish_region_capture(
     // Crop directly from the in-memory image — no disk read, no PNG decode
     // (the old path spent ~40–100ms re-reading + re-decoding the frozen PNG).
     let store = app.state::<RegionStore>();
-    let img = store
-        .images
-        .lock()
-        .unwrap()
+    let img = lock(&store.images)
         .get(&label)
         .cloned()
         .ok_or_else(|| "no frozen image".to_string())?;
@@ -202,12 +215,7 @@ pub async fn finish_region_capture(
     hide_overlays(&app);
     show_main(&app);
 
-    let _ = clipboard::copy_rgba(&app, &cropped);
-    let cap = imaging::save_session_png(&app, &cropped)?;
-    let _ = crate::history::store_image(&app, &cropped, None, None);
-    let _ = app.emit("capture-ready", &cap);
-    let _ = app.emit("history-changed", ());
-    Ok(cap)
+    finalize(&app, cropped)
 }
 
 #[tauri::command]

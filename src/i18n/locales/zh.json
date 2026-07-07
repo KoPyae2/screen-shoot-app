@@ -1,0 +1,91 @@
+{
+  "app": {
+    "name": "Snapture",
+    "tagline": "截图工作台",
+    "version": "v1.2.0"
+  },
+  "sidebar": {
+    "recent": "最近记录",
+    "clear": "清空",
+    "clearAllConfirm": "确定清空所有截图吗？",
+    "clearAllConfirmDesc": "这将永久删除所有已保存的截图，此操作无法撤销。",
+    "captureCount_one": "将删除 {{count}} 张截图",
+    "captureCount_other": "将删除 {{count}} 张截图",
+    "noScreenshots": "暂无截图",
+    "yourCapturesWillAppear": "您保存的截图将显示在这里。"
+  },
+  "capture": {
+    "title": "截图",
+    "description": "截取屏幕 — 自动复制到剪贴板并打开编辑器。",
+    "fullScreen": "全屏截图",
+    "fullScreenDesc": "截取整个显示器",
+    "fullScreenHotkey": "Ctrl+⇧+2",
+    "region": "区域截图",
+    "regionDesc": "拖动鼠标选择区域",
+    "regionHotkey": "Ctrl+⇧+1",
+    "window": "窗口截图",
+    "windowDesc": "选择一个打开的窗口",
+    "windowHotkey": "Ctrl+⇧+3",
+    "activeWindow": "活动窗口",
+    "activeWindowDesc": "截取当前聚焦的窗口",
+    "allDisplays": "所有显示器",
+    "allDisplaysDesc": "同时截取所有屏幕",
+    "moreComingSoon": "更多截图模式敬请期待",
+    "moreSoon": "敬请期待",
+    "chooseDisplay": "选择显示器",
+    "primary": "主显示器",
+    "chooseWindow": "选择窗口",
+    "searchWindows": "搜索窗口…",
+    "refreshWindowList": "刷新窗口列表",
+    "noWindowsFound": "未找到可截取的窗口。",
+    "noWindowsMatch": "没有找到匹配 “{{query}}” 的窗口。"
+  },
+  "editor": {
+    "backToCapture": "返回截图",
+    "selectMove": "选择 / 移动",
+    "arrow": "箭头",
+    "rectangle": "矩形",
+    "ellipse": "椭圆",
+    "freeDraw": "自由涂鸦",
+    "text": "文字",
+    "highlighter": "荧光笔",
+    "blur": "模糊",
+    "pixelate": "马赛克",
+    "customColor": "自定义颜色",
+    "strength": "强度",
+    "font": "字体",
+    "size": "字号",
+    "undo": "撤销",
+    "redo": "重做",
+    "delete": "删除选中",
+    "copy": "复制",
+    "save": "保存",
+    "copiedToClipboard": "已将修改后的图片复制到剪贴板",
+    "saveDialogTitle": "保存截图",
+    "saveDialogDefaultName": "screenshot-{{timestamp}}.png",
+    "pngImage": "PNG 图片",
+    "jpegImage": "JPEG 图片",
+    "saved": "已保存"
+  },
+  "overlay": {
+    "dragHint": "拖动鼠标选择区域 · 按 {{esc}} 取消",
+    "esc": "Esc"
+  },
+  "toast": {
+    "screenCaptured": "屏幕已截取并复制到剪贴板",
+    "allMonitorsCaptured": "已截取所有显示器屏幕",
+    "windowCaptured": "窗口已截取并复制到剪贴板",
+    "activeWindowCaptured": "当前活动窗口已截取",
+    "shortcutError": "快捷键不可用（已被其他应用占用）: {{keys}}"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{{n}} 分钟前",
+    "hoursAgo": "{{n}} 小时前",
+    "daysAgo": "{{n}} 天前"
+  },
+  "ui": {
+    "close": "关闭",
+    "cancel": "取消"
+  }
+}

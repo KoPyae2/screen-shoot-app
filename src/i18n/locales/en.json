@@ -2,13 +2,15 @@
   "app": {
     "name": "Snapture",
     "tagline": "Screenshot studio",
-    "version": "v1.1.0"
+    "version": "v1.2.0"
   },
   "sidebar": {
     "recent": "Recent",
     "clear": "Clear",
     "clearAllConfirm": "Clear all screenshots?",
     "clearAllConfirmDesc": "This will permanently delete all your saved captures. This action cannot be undone.",
+    "captureCount_one": "{{count}} capture will be deleted",
+    "captureCount_other": "{{count}} captures will be deleted",
     "noScreenshots": "No screenshots yet.",
     "yourCapturesWillAppear": "Your saved captures will appear here."
   },
@@ -40,22 +42,22 @@
   },
   "editor": {
     "backToCapture": "Back to capture",
-    "selectMove": "Select / Move (V)",
-    "arrow": "Arrow (A)",
-    "rectangle": "Rectangle (R)",
-    "ellipse": "Ellipse (O)",
-    "freeDraw": "Free draw (P)",
-    "text": "Text (T)",
-    "highlighter": "Highlighter (H)",
-    "blur": "Blur (B)",
-    "pixelate": "Pixelate (X)",
+    "selectMove": "Select / Move",
+    "arrow": "Arrow",
+    "rectangle": "Rectangle",
+    "ellipse": "Ellipse",
+    "freeDraw": "Free draw",
+    "text": "Text",
+    "highlighter": "Highlighter",
+    "blur": "Blur",
+    "pixelate": "Pixelate",
     "customColor": "Custom color",
     "strength": "Strength",
     "font": "Font",
     "size": "Size",
-    "undo": "Undo (Ctrl+Z)",
-    "redo": "Redo (Ctrl+Y)",
-    "delete": "Delete selected (Del)",
+    "undo": "Undo",
+    "redo": "Redo",
+    "delete": "Delete selected",
     "copy": "Copy",
     "save": "Save",
     "copiedToClipboard": "Copied edited image to clipboard",
@@ -73,7 +75,8 @@
     "screenCaptured": "Screen captured & copied to clipboard",
     "allMonitorsCaptured": "All monitors captured",
     "windowCaptured": "Window captured & copied to clipboard",
-    "activeWindowCaptured": "Active window captured"
+    "activeWindowCaptured": "Active window captured",
+    "shortcutError": "Hotkeys unavailable (in use by another app): {{keys}}"
   },
   "time": {
     "justNow": "just now",
@@ -82,6 +85,7 @@
     "daysAgo": "{{n}}d ago"
   },
   "ui": {
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel"
   }
 }

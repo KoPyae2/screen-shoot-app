@@ -1,3 +1,7 @@
+/* Self-hosted Inter (variable font): works offline and inside the app's CSP,
+   unlike the previous Google Fonts <link> which the CSP silently blocked in
+   packaged builds. */
+@import "@fontsource-variable/inter";
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -28,14 +32,12 @@
   --color-brand-soft: var(--brand-soft);
   --color-accent: #06b6d4;
   --color-danger: #f0556d;
-  --color-warn: #f5a623;
 
   --radius-xl: 16px;
   --radius-lg: 12px;
   --radius-md: 9px;
   --radius-sm: 6px;
 
-  --shadow-glow: 0 0 0 1px #7c3aed40, 0 8px 30px -8px #7c3aed55;
   --shadow-cyan-glow: 0 0 0 1px #06b6d440, 0 8px 30px -8px #06b6d455, 0 0 20px -4px #06b6d420;
   --shadow-panel: var(--panel-shadow);
 }
@@ -110,7 +112,7 @@ body,
 body {
   background: var(--app-bg);
   color: var(--color-fg);
-  font-family: "Inter", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter Variable", "Inter", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
@@ -150,6 +152,44 @@ body {
 }
 .animate-fade-in {
   animation: fade-in 0.18s ease-out both;
+}
+
+/* Confirm dialog entrance: subtle scale + fade from slightly below center. */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-dialog-in {
+  animation: dialog-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Selected color swatch: brand ring pops in with a small overshoot.
+   The final frame (via `both`) doubles as the resting selected style. */
+@keyframes ring-pop {
+  0% {
+    box-shadow:
+      0 0 0 2px var(--bg-elevated),
+      0 0 0 2px var(--color-brand);
+  }
+  60% {
+    box-shadow:
+      0 0 0 2px var(--bg-elevated),
+      0 0 0 5.5px var(--color-brand);
+  }
+  100% {
+    box-shadow:
+      0 0 0 2px var(--bg-elevated),
+      0 0 0 4px var(--color-brand);
+  }
+}
+.animate-ring-pop {
+  animation: ring-pop 0.25s ease-out both;
 }
 
 /* Thin scrollbar for the editor toolbar */

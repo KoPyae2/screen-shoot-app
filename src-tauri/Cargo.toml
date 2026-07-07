@@ -1,11 +1,11 @@
 [package]
 name = "screen-shoot"
-version = "1.0.0"
-description = "A next-gen desktop screenshot studio"
+version = "1.2.0"
+description = "A modern desktop screenshot studio"
 authors = ["Snapture Contributors"]
 license = "MIT"
 edition = "2021"
-repository = "https://github.com/mumu/snapture"
+repository = "https://github.com/KoPyae2/screen-shoot-app"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,7 +21,6 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api"] }
-tauri-plugin-opener = "2"
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-global-shortcut = "2"

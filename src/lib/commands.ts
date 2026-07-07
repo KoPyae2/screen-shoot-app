@@ -2,8 +2,8 @@ import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import type {
   CaptureResult,
   HistoryEntry,
-  ImageFormat,
   MonitorInfo,
+  RegionInitPayload,
   WindowInfo,
 } from "./types";
 
@@ -37,24 +37,44 @@ export const finishRegionCapture = (
 ) => invoke<CaptureResult>("finish_region_capture", { monitorId, x, y, w, h });
 export const cancelRegionCapture = () => invoke<void>("cancel_region_capture");
 
-export const copyImageToClipboard = (path: string) =>
-  invoke<void>("copy_image_to_clipboard", { path });
+/** Metadata for the frozen frame shown by a region overlay window. */
+export const regionPayload = (label: string) =>
+  invoke<RegionInitPayload | null>("region_payload", { label });
 
-/** Load an image file as a base64 data URL (keeps the editor canvas untainted). */
+/** Raw RGBA bytes of the frozen frame (binary IPC fast path). */
+export const regionImageBytes = (label: string) =>
+  invoke<ArrayBuffer>("region_image_bytes", { label });
+
+/** Load a capture as a base64 data URL (keeps the editor canvas untainted). */
 export const readImageDataUrl = (path: string) =>
   invoke<string>("read_image_data_url", { path });
 
 export const copyBytesToClipboard = (b64: string) =>
   invoke<void>("copy_bytes_to_clipboard", { b64 });
 
+/**
+ * Save an image via a Rust-side native dialog (the webview never picks
+ * filesystem paths). Returns the saved path, or null if the user cancelled.
+ * Dialog strings are passed in so they stay localized.
+ */
 export const saveImageBytes = (
-  destPath: string,
   b64: string,
-  format: ImageFormat,
   quality: number,
-) => invoke<void>("save_image_bytes", { destPath, b64, format, quality });
+  labels: { title: string; defaultName: string; pngLabel: string; jpegLabel: string },
+) =>
+  invoke<string | null>("save_image_bytes", {
+    b64,
+    quality,
+    title: labels.title,
+    defaultName: labels.defaultName,
+    pngLabel: labels.pngLabel,
+    jpegLabel: labels.jpegLabel,
+  });
 
 export const historyList = () => invoke<HistoryEntry[]>("history_list");
 export const historyDelete = (id: string) =>
   invoke<void>("history_delete", { id });
 export const historyClear = () => invoke<void>("history_clear");
+
+/** Names of global shortcuts that failed to register at startup. */
+export const failedShortcuts = () => invoke<string[]>("failed_shortcuts");

@@ -57,7 +57,8 @@ export function useCapture() {
     }
   }, [setBusy]);
 
-  const window = useCallback(
+  // Named to avoid shadowing the global `window` inside this hook.
+  const windowById = useCallback(
     async (windowId: number) => {
       setBusy(true);
       try {
@@ -92,5 +93,5 @@ export function useCapture() {
     }
   }, []);
 
-  return { fullscreen, allMonitors, region, window, activeWindow, refreshWindows };
+  return { fullscreen, allMonitors, region, window: windowById, activeWindow, refreshWindows };
 }

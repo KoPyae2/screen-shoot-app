@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import Konva from "konva";
 import { Stage, Layer, Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
-import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { copyBytesToClipboard, readImageDataUrl, saveImageBytes } from "../../lib/commands";
 import { dataUrlToBase64 } from "../../lib/export";
 import { useEditorStore, type Shape } from "../../store/editorStore";
-import type { CaptureResult, ImageFormat } from "../../lib/types";
+import type { CaptureResult } from "../../lib/types";
 import { LeftToolbar, RightToolbar } from "./EditorToolbar";
 import { ShapeNode } from "./shapes/ShapeNode";
 import { toast } from "../ui/Toast";
@@ -36,6 +35,7 @@ export function Editor({ capture, onBack }: Props) {
   const updateShape = useEditorStore((s) => s.updateShape);
   const updateShapeCommit = useEditorStore((s) => s.updateShapeCommit);
   const removeSelected = useEditorStore((s) => s.removeSelected);
+  const discardShape = useEditorStore((s) => s.discardShape);
   const reset = useEditorStore((s) => s.reset);
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
@@ -68,7 +68,9 @@ export function Editor({ capture, onBack }: Props) {
       .then((url) => {
         if (alive) setDataUrl(url);
       })
-      .catch(() => {});
+      .catch((e) => {
+        if (alive) toast.error(String(e));
+      });
     return () => {
       alive = false;
     };
@@ -256,13 +258,26 @@ export function Editor({ capture, onBack }: Props) {
       if (width < 0) { x += width; width = -width; }
       if (height < 0) { y += height; height = -height; }
       if (width < 5 || height < 5) {
-        removeSelected();
+        discardShape(id);
         return;
       }
       updateShapeCommit(id, { x, y, width, height } as Partial<Shape>);
+    } else if (shape.type === "arrow") {
+      // A click without a drag leaves an invisible zero-length arrow.
+      const [x1, y1, x2, y2] = shape.points;
+      if (Math.hypot(x2 - x1, y2 - y1) < 5) {
+        discardShape(id);
+        return;
+      }
+    } else if (shape.type === "pen" || shape.type === "highlighter") {
+      // A single-point line renders nothing but pollutes undo history.
+      if (shape.points.length < 4) {
+        discardShape(id);
+        return;
+      }
     }
     select(id);
-  }, [removeSelected, select, updateShapeCommit]);
+  }, [discardShape, select, updateShapeCommit]);
 
   const editingShape = editingText
     ? (shapes.find((s) => s.id === editingText.id) as Extract<Shape, { type: "text" }> | undefined)
@@ -290,12 +305,31 @@ export function Editor({ capture, onBack }: Props) {
     if (!editingText) return;
     const ta = textareaRef.current;
     const val = ta?.value ?? "";
+    const store = useEditorStore.getState();
+    const shape = store.shapes.find((s) => s.id === editingText.id);
     if (val.trim() === "") {
-      // Empty text → remove the shape.
-      useEditorStore.getState().select(editingText.id);
-      useEditorStore.getState().removeSelected();
+      if (shape && "text" in shape && shape.text === "") {
+        // Never had content → drop it and its addShape undo step entirely.
+        store.discardShape(editingText.id);
+      } else {
+        // Existing text emptied by the user → a real, undoable deletion.
+        store.select(editingText.id);
+        store.removeSelected();
+      }
     } else {
       updateShapeCommit(editingText.id, { text: val } as Partial<Shape>);
+    }
+    setEditingText(null);
+  };
+
+  // Escape cancels the edit: a brand-new empty shape is discarded (it would
+  // otherwise linger invisibly forever); an existing shape keeps its old text.
+  const cancelText = () => {
+    if (!editingText) return;
+    const store = useEditorStore.getState();
+    const shape = store.shapes.find((s) => s.id === editingText.id);
+    if (shape && "text" in shape && shape.text === "") {
+      store.discardShape(editingText.id);
     }
     setEditingText(null);
   };
@@ -330,22 +364,14 @@ export function Editor({ capture, onBack }: Props) {
     try {
       const b64 = flatten();
       if (!b64) return;
-      const path = await saveDialog({
+      // The native save dialog runs Rust-side; a null path means cancelled.
+      const path = await saveImageBytes(b64, 92, {
         title: t("editor.saveDialogTitle"),
-        defaultPath: t("editor.saveDialogDefaultName", { timestamp: Date.now() }),
-        filters: [
-          { name: t("editor.pngImage"), extensions: ["png"] },
-          { name: t("editor.jpegImage"), extensions: ["jpg", "jpeg"] },
-        ],
+        defaultName: t("editor.saveDialogDefaultName", { timestamp: Date.now() }),
+        pngLabel: t("editor.pngImage"),
+        jpegLabel: t("editor.jpegImage"),
       });
-      if (!path) {
-        setBusy(false);
-        return;
-      }
-      const ext = path.split(".").pop()?.toLowerCase();
-      const format: ImageFormat = ext === "jpg" || ext === "jpeg" ? "jpg" : "png";
-      await saveImageBytes(path, b64, format, 92);
-      toast.success(t("editor.saved"));
+      if (path) toast.success(t("editor.saved"));
     } catch (e) {
       toast.error(String(e));
     } finally {
@@ -353,10 +379,26 @@ export function Editor({ capture, onBack }: Props) {
     }
   };
 
+  // Stable callbacks shared by every ShapeNode — inline closures here would
+  // defeat their React.memo and re-render all shapes on every rAF tick while
+  // drawing. Reading tool/shapes via getState() keeps the identities stable.
+  const handleShapeSelect = useCallback((id: string) => {
+    const store = useEditorStore.getState();
+    if (store.tool === "select") store.select(id);
+  }, []);
+  const handleShapeChange = useCallback(
+    (id: string, patch: Partial<Shape>) => updateShapeCommit(id, patch),
+    [updateShapeCommit],
+  );
+  const handleTextEdit = useCallback((id: string) => {
+    const shape = useEditorStore.getState().shapes.find((x) => x.id === id);
+    if (shape && shape.type === "text") setEditingText({ id, x: shape.x, y: shape.y });
+  }, []);
+
   const cursor = tool === "select" ? "default" : "crosshair";
 
-  const stageW = useMemo(() => capture.width * scale, [capture.width, scale]);
-  const stageH = useMemo(() => capture.height * scale, [capture.height, scale]);
+  const stageW = capture.width * scale;
+  const stageH = capture.height * scale;
 
   return (
     <div className="flex h-full">
@@ -395,12 +437,9 @@ export function Editor({ capture, onBack }: Props) {
                   shape={s}
                   image={image}
                   draggable={tool === "select"}
-                  onSelect={() => tool === "select" && select(s.id)}
-                  onChange={(patch) => updateShapeCommit(s.id, patch)}
-                  onTextEdit={(id) => {
-                    const t = shapes.find((x) => x.id === id) as Extract<Shape, { type: "text" }>;
-                    if (t) setEditingText({ id, x: t.x, y: t.y });
-                  }}
+                  onSelect={handleShapeSelect}
+                  onChange={handleShapeChange}
+                  onTextEdit={handleTextEdit}
                 />
               ))}
               <Transformer
@@ -428,7 +467,7 @@ export function Editor({ capture, onBack }: Props) {
                 e.stopPropagation();
                 if (e.key === "Escape") {
                   e.preventDefault();
-                  setEditingText(null);
+                  cancelText();
                 }
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -452,7 +491,7 @@ export function Editor({ capture, onBack }: Props) {
                 minHeight: 32,
                 resize: "none",
                 overflow: "hidden",
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "'Inter Variable', Inter, sans-serif",
                 zIndex: 100,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
               }}

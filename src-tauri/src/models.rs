@@ -48,5 +48,4 @@ pub struct HistoryEntry {
     pub width: u32,
     pub height: u32,
     pub created_at: String,
-    pub note: Option<String>,
 }

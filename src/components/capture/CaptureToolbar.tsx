@@ -4,6 +4,7 @@ import { Monitor, Square, AppWindow, Monitor as MonitorIcon, Layers } from "luci
 import { useCapture } from "../../hooks/useCapture";
 import { useCaptureStore } from "../../store/captureStore";
 import { listMonitors } from "../../lib/commands";
+import { toast } from "../ui/Toast";
 import { Tooltip } from "../ui/Tooltip";
 import { MonitorPicker } from "./MonitorPicker";
 import { WindowPicker } from "./WindowPicker";
@@ -48,7 +49,10 @@ export function CaptureToolbar() {
   const [showWindows, setShowWindows] = useState(false);
 
   const onFullscreen = async () => {
-    const monitors = await listMonitors().catch(() => []);
+    const monitors = await listMonitors().catch((e) => {
+      toast.error(String(e));
+      return [];
+    });
     useCaptureStore.getState().setMonitors(monitors);
     if (monitors.length > 1) setShowMonitors(true);
     else fullscreen();
