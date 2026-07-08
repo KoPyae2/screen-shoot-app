@@ -2,7 +2,7 @@
   "app": {
     "name": "Snapture",
     "tagline": "截图工作台",
-    "version": "v1.2.0"
+    "version": "v1.3.0"
   },
   "sidebar": {
     "recent": "最近记录",
@@ -70,6 +70,42 @@
   "overlay": {
     "dragHint": "拖动鼠标选择区域 · 按 {{esc}} 取消",
     "esc": "Esc"
+  },
+  "snippet": {
+    "card": "代码片段",
+    "cardDesc": "将代码转换为图片",
+    "back": "返回截图",
+    "pasteTitle": "粘贴你的代码",
+    "pastePlaceholder": "在此粘贴或输入代码…",
+    "insertSample": "插入示例代码",
+    "done": "完成",
+    "editCode": "编辑代码",
+    "editHint": "点击代码进行编辑",
+    "canvasHint": "点击代码编辑 · Ctrl+滚轮缩放 · 中键拖动平移",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "zoomReset": "重置缩放",
+    "zoomFit": "适应屏幕",
+    "language": "语言",
+    "autoDetect": "自动检测",
+    "theme": "主题",
+    "background": "背景",
+    "customColor": "自定义颜色",
+    "window": "窗口",
+    "windowControls": "窗口控件",
+    "lineNumbers": "行号",
+    "titlePlaceholder": "标题（可选）",
+    "layout": "布局",
+    "padding": "内边距",
+    "fontSize": "字号",
+    "radius": "圆角",
+    "previewHint": "可复制或保存",
+    "copy": "复制图片",
+    "save": "保存图片",
+    "copied": "代码片段图片已复制到剪贴板",
+    "saved": "代码片段图片已保存",
+    "saveDialogTitle": "保存代码片段",
+    "saveDialogDefaultName": "snippet-{{timestamp}}.png"
   },
   "toast": {
     "screenCaptured": "屏幕已截取并复制到剪贴板",

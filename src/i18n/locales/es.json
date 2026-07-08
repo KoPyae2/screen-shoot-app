@@ -2,7 +2,7 @@
   "app": {
     "name": "Snapture",
     "tagline": "Estudio de capturas",
-    "version": "v1.2.0"
+    "version": "v1.3.0"
   },
   "sidebar": {
     "recent": "Recientes",
@@ -70,6 +70,42 @@
   "overlay": {
     "dragHint": "Arrastra para seleccionar un área · {{esc}} para cancelar",
     "esc": "Esc"
+  },
+  "snippet": {
+    "card": "Fragmento de código",
+    "cardDesc": "Convierte código en imagen",
+    "back": "Volver a captura",
+    "pasteTitle": "Pega tu código",
+    "pastePlaceholder": "Pega o escribe tu código aquí…",
+    "insertSample": "Insertar código de ejemplo",
+    "done": "Listo",
+    "editCode": "Editar código",
+    "editHint": "Haz clic en el código para editar",
+    "canvasHint": "Clic para editar · Ctrl+Rueda para zoom · Arrastrar con rueda para mover",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "zoomReset": "Restablecer zoom",
+    "zoomFit": "Ajustar a pantalla",
+    "language": "Lenguaje",
+    "autoDetect": "Autodetectar",
+    "theme": "Tema",
+    "background": "Fondo",
+    "customColor": "Color personalizado",
+    "window": "Ventana",
+    "windowControls": "Controles de ventana",
+    "lineNumbers": "Números de línea",
+    "titlePlaceholder": "Título (opcional)",
+    "layout": "Diseño",
+    "padding": "Relleno",
+    "fontSize": "Tamaño de fuente",
+    "radius": "Radio de esquina",
+    "previewHint": "Listo para copiar o guardar",
+    "copy": "Copiar imagen",
+    "save": "Guardar imagen",
+    "copied": "Imagen del fragmento copiada al portapapeles",
+    "saved": "Imagen del fragmento guardada",
+    "saveDialogTitle": "Guardar fragmento de código",
+    "saveDialogDefaultName": "fragmento-{{timestamp}}.png"
   },
   "toast": {
     "screenCaptured": "Pantalla capturada y copiada al portapapeles",

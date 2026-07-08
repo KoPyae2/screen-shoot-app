@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Monitor, Square, AppWindow, Monitor as MonitorIcon, Layers } from "lucide-react";
+import { Monitor, Square, AppWindow, Layers, Code2 } from "lucide-react";
 import { useCapture } from "../../hooks/useCapture";
 import { useCaptureStore } from "../../store/captureStore";
 import { listMonitors } from "../../lib/commands";
 import { toast } from "../ui/Toast";
-import { Tooltip } from "../ui/Tooltip";
 import { MonitorPicker } from "./MonitorPicker";
 import { WindowPicker } from "./WindowPicker";
 
@@ -41,7 +40,7 @@ function CaptureCard({ icon, title, subtitle, hotkey, onClick, disabled }: Captu
   );
 }
 
-export function CaptureToolbar() {
+export function CaptureToolbar({ onCodeSnippet }: { onCodeSnippet?: () => void }) {
   const { t } = useTranslation();
   const { busy } = useCaptureStore();
   const { fullscreen, region, allMonitors, activeWindow } = useCapture();
@@ -111,11 +110,12 @@ export function CaptureToolbar() {
           onClick={allMonitors}
           disabled={busy}
         />
-        <Tooltip label={t("capture.moreComingSoon")} className="block">
-          <div className="flex h-full min-h-[132px] items-center justify-center rounded-xl border border-dashed border-border-soft text-xs text-fg-subtle">
-            <MonitorIcon size={16} className="mr-1.5 opacity-50" /> {t("capture.moreSoon")}
-          </div>
-        </Tooltip>
+        <CaptureCard
+          icon={<Code2 size={22} />}
+          title={t("snippet.card")}
+          subtitle={t("snippet.cardDesc")}
+          onClick={() => onCodeSnippet?.()}
+        />
       </div>
 
       <MonitorPicker open={showMonitors} onClose={() => setShowMonitors(false)} />

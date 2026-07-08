@@ -86,6 +86,11 @@ Grab the latest installer for your platform from the [**Releases page**](https:/
 - **macOS** — `.dmg`
 - **Linux** — `.deb`, `.rpm`, or `.AppImage`
 
+> **Windows note:** Snapture's installer isn't code-signed yet (free OSS signing is
+> [pending approval](docs/code-signing.md)), so SmartScreen will show an "Unknown
+> publisher" prompt. Click **More info → Run anyway** to proceed — this is expected
+> for a small open-source project and will go away once signing is set up.
+
 ## Getting Started
 
 ### Prerequisites

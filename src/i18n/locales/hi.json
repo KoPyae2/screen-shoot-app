@@ -2,7 +2,7 @@
   "app": {
     "name": "Snapture",
     "tagline": "स्क्रीनशॉट स्टूडियो",
-    "version": "v1.2.0"
+    "version": "v1.3.0"
   },
   "sidebar": {
     "recent": "हालिया",
@@ -70,6 +70,42 @@
   "overlay": {
     "dragHint": "एरिया चुनने के लिए ड्रैग करें · रद्द करने के लिए {{esc}} दबाएं",
     "esc": "Esc"
+  },
+  "snippet": {
+    "card": "कोड स्निपेट",
+    "cardDesc": "कोड को इमेज में बदलें",
+    "back": "कैप्चर पर वापस जाएं",
+    "pasteTitle": "अपना कोड पेस्ट करें",
+    "pastePlaceholder": "यहां अपना कोड पेस्ट या टाइप करें…",
+    "insertSample": "नमूना कोड डालें",
+    "done": "पूर्ण",
+    "editCode": "कोड संपादित करें",
+    "editHint": "संपादित करने के लिए कोड पर क्लिक करें",
+    "canvasHint": "संपादन हेतु कोड पर क्लिक करें · Ctrl+स्क्रॉल ज़ूम · मध्य बटन खींचें",
+    "zoomIn": "ज़ूम इन",
+    "zoomOut": "ज़ूम आउट",
+    "zoomReset": "ज़ूम रीसेट करें",
+    "zoomFit": "स्क्रीन में फ़िट करें",
+    "language": "भाषा",
+    "autoDetect": "स्वतः पहचानें",
+    "theme": "थीम",
+    "background": "पृष्ठभूमि",
+    "customColor": "कस्टम रंग",
+    "window": "विंडो",
+    "windowControls": "विंडो नियंत्रण",
+    "lineNumbers": "पंक्ति संख्या",
+    "titlePlaceholder": "शीर्षक (वैकल्पिक)",
+    "layout": "लेआउट",
+    "padding": "पैडिंग",
+    "fontSize": "फ़ॉन्ट आकार",
+    "radius": "कोना त्रिज्या",
+    "previewHint": "कॉपी या सेव के लिए तैयार",
+    "copy": "इमेज कॉपी करें",
+    "save": "इमेज सेव करें",
+    "copied": "स्निपेट इमेज क्लिपबोर्ड पर कॉपी की गई",
+    "saved": "स्निपेट इमेज सेव की गई",
+    "saveDialogTitle": "कोड स्निपेट सेव करें",
+    "saveDialogDefaultName": "snippet-{{timestamp}}.png"
   },
   "toast": {
     "screenCaptured": "स्क्रीन कैप्चर और क्लिपबोर्ड पर कॉपी हो गई",

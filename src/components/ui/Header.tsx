@@ -56,8 +56,7 @@ export function Header() {
   return (
     <div className="flex h-10 shrink-0 items-stretch bg-bg-elevated/80 backdrop-blur border-b border-border select-none">
       <div className="flex flex-1 items-center gap-2.5 pl-4" data-tauri-drag-region>
-        <img src="/icon.png" alt="Snapture" className="h-10 w-10 ms-[-16px]" draggable={false} />
-        <span className="text-sm font-semibold text-fg -mt-1 -ms-1">Snapture</span>
+        <span className="text-sm font-semibold text-fg">Snapture</span>
       </div>
       <div className="flex items-center gap-3 pr-3">
         <button

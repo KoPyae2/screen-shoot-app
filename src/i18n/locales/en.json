@@ -2,7 +2,7 @@
   "app": {
     "name": "Snapture",
     "tagline": "Screenshot studio",
-    "version": "v1.2.0"
+    "version": "v1.3.0"
   },
   "sidebar": {
     "recent": "Recent",
@@ -70,6 +70,42 @@
   "overlay": {
     "dragHint": "Drag to select an area · {{esc}} to cancel",
     "esc": "Esc"
+  },
+  "snippet": {
+    "card": "Code Snippet",
+    "cardDesc": "Turn code into an image",
+    "back": "Back to capture",
+    "pasteTitle": "Paste your code",
+    "pastePlaceholder": "Paste or type your code here…",
+    "insertSample": "Insert sample code",
+    "done": "Done",
+    "editCode": "Edit code",
+    "editHint": "Click the code to edit",
+    "canvasHint": "Click code to edit · Ctrl+Scroll to zoom · Middle-drag to pan",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Reset zoom",
+    "zoomFit": "Fit to screen",
+    "language": "Language",
+    "autoDetect": "Auto-detect",
+    "theme": "Theme",
+    "background": "Background",
+    "customColor": "Custom color",
+    "window": "Window",
+    "windowControls": "Window controls",
+    "lineNumbers": "Line numbers",
+    "titlePlaceholder": "Title (optional)",
+    "layout": "Layout",
+    "padding": "Padding",
+    "fontSize": "Font size",
+    "radius": "Corner radius",
+    "previewHint": "Ready to copy or save",
+    "copy": "Copy image",
+    "save": "Save image",
+    "copied": "Copied snippet image to clipboard",
+    "saved": "Snippet image saved",
+    "saveDialogTitle": "Save code snippet",
+    "saveDialogDefaultName": "snippet-{{timestamp}}.png"
   },
   "toast": {
     "screenCaptured": "Screen captured & copied to clipboard",

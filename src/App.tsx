@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Camera, Github } from "lucide-react";
+import { Github } from "lucide-react";
 import { CaptureToolbar } from "./components/capture/CaptureToolbar";
 import { HistoryPanel } from "./components/history/HistoryPanel";
 import { Toaster } from "./components/ui/Toast";
@@ -12,9 +12,10 @@ import { failedShortcuts } from "./lib/commands";
 import { toast } from "./components/ui/Toast";
 import type { CaptureResult } from "./lib/types";
 
-type View = "capture" | "editor";
+type View = "capture" | "editor" | "snippet";
 
 const EditorLazy = React.lazy(() => import("./components/editor/Editor"));
+const SnippetEditorLazy = React.lazy(() => import("./components/snippet/SnippetEditor"));
 
 export default function App() {
   const { t } = useTranslation();
@@ -83,9 +84,7 @@ export default function App() {
         {/* Sidebar */}
         <aside className="flex w-72 shrink-0 flex-col border-r border-violet-500/10 bg-bg-elevated/60 backdrop-blur">
         <div className="flex items-center gap-2.5 px-4 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400 text-white shadow-[0_6px_18px_-4px_rgba(124,58,237,0.5)]">
-            <Camera size={19} />
-          </div>
+          <img src="/icon.png" alt="Snapture" className="h-9 w-9 rounded-lg shadow-[0_6px_18px_-4px_rgba(124,58,237,0.5)]" draggable={false} />
           <div>
             <p className="text-sm font-semibold leading-tight">{t("app.name")}</p>
             <p className="text-[11px] text-fg-subtle">{t("app.tagline")}</p>
@@ -105,9 +104,13 @@ export default function App() {
 
         {/* Main content */}
         <main className="relative flex flex-1 flex-col overflow-hidden">
-        {view === "capture" || !capture ? (
+        {view === "snippet" ? (
+          <React.Suspense fallback={<div className="flex-1" />}>
+            <SnippetEditorLazy onBack={() => setView("capture")} />
+          </React.Suspense>
+        ) : view === "capture" || !capture ? (
           <div className="flex-1 overflow-y-auto px-8 py-7">
-            <CaptureToolbar />
+            <CaptureToolbar onCodeSnippet={() => setView("snippet")} />
           </div>
         ) : (
           <React.Suspense fallback={<div className="flex-1" />}>

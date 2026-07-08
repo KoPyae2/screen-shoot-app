@@ -250,3 +250,68 @@ body {
   height: 6px;
   border-radius: 999px;
 }
+
+/* ---- Code snippet (Shiki) rendering ---- */
+/* Shiki emits `<pre class="shiki" style="background:…"><code>…`. We control
+   padding, font and (optional) line numbers here so the exported PNG is crisp
+   and consistent regardless of theme. A transparent <textarea> is layered on
+   top for live editing, so its metrics must match `pre.shiki` exactly. */
+:root {
+  --snippet-font: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+    "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --snippet-pad-y: 20px;
+  --snippet-pad-x: 22px;
+  --snippet-gutter: calc(2ch + 1.5em);
+}
+
+.snippet-code pre.shiki {
+  margin: 0;
+  padding: var(--snippet-pad-y) var(--snippet-pad-x);
+  overflow: visible;
+  font-family: var(--snippet-font);
+  tab-size: 2;
+  white-space: pre;
+}
+.snippet-code pre.shiki code {
+  display: block;
+  font-family: inherit;
+}
+.snippet-code .line {
+  display: inline-block;
+  width: 100%;
+  min-height: 1.2em;
+}
+
+/* Line numbers via a CSS counter so they never appear in copied text. */
+.snippet-code.snippet-line-numbers code {
+  counter-reset: snippet-line;
+}
+.snippet-code.snippet-line-numbers .line::before {
+  counter-increment: snippet-line;
+  content: counter(snippet-line);
+  display: inline-block;
+  width: 2ch;
+  margin-right: 1.5em;
+  text-align: right;
+  opacity: 0.35;
+  user-select: none;
+}
+
+/* Transparent editing layer stacked over the highlighted code. */
+.snippet-code-overlay {
+  margin: 0;
+  padding: var(--snippet-pad-y) var(--snippet-pad-x);
+  font-family: var(--snippet-font);
+  tab-size: 2;
+  border: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+/* When line numbers show, shift the editable text right by the gutter width so
+   the caret and glyphs sit exactly over the highlighted characters. */
+.snippet-line-numbers-overlay {
+  padding-left: calc(var(--snippet-pad-x) + var(--snippet-gutter));
+}
+.snippet-code-overlay::selection {
+  background: rgba(120, 160, 255, 0.35);
+}

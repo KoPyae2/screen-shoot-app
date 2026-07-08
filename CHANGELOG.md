@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-08
+
+Snapture now turns code into images. This release adds a full **Code Snippet**
+studio alongside the existing screenshot capture — paste any code and get a
+shareable, syntax-highlighted image with window chrome, backgrounds, and live
+editing. No backend changes were required; the snippet exports reuse the same
+image pipeline as the screenshot editor.
+
+### New: Code Snippet Studio
+
+- **Capture screen → "Code Snippet" card** opens a dedicated editor.
+- **Syntax highlighting** via Shiki — 20 languages (JS/TS/JSX/TSX, Python, Rust,
+  Go, Java, C/C++, C#, PHP, Ruby, HTML, CSS, JSON, YAML, SQL, Bash, Markdown)
+  and 8 themes (GitHub Dark/Light, Dracula, Nord, One Dark Pro, Monokai,
+  Vitesse Dark/Light). Includes best-effort auto-detection.
+- **Live inline editing** — type directly on the highlighted preview; the
+  transparent overlay stays pixel-aligned with the rendered code, and Tab
+  inserts two spaces.
+- **Beautiful framing** — 11 background presets (gradients + transparent) plus
+  a custom color picker, macOS-style window dots, optional title bar, line
+  numbers, adjustable padding and corner radius.
+- **Canvas navigation** — Ctrl+Scroll to zoom, middle-mouse drag to pan,
+  auto-fit-to-screen on paste (re-fits on content/layout/resize; manual zoom or
+  pan opts out until the Reset/Fit button is pressed). Zoom controls with a
+  live percentage readout live in the left rail.
+- **Export** — Copy to clipboard and Save via the native OS dialog (PNG/JPEG),
+  producing true-resolution output regardless of the on-screen zoom.
+
+### Changed
+
+- Replaced the generic camera glyph in the sidebar with the Snapture app logo.
+- Removed the redundant app icon from the title bar; the wordmark stands alone.
+- Custom `Select` dropdown component replaces native `<select>` in the snippet
+  toolbar — portal-rendered menus that scroll correctly inside narrow panels
+  and never get clipped.
+
+### Removed
+
+- Dropped the "More capture modes coming soon" placeholder tile from the
+  Capture screen in favor of the real Code Snippet card.
+
+### Notes
+
+- The `snippet` namespace is fully localized in English, Chinese, Spanish,
+  Hindi, and Burmese.
+- No Rust backend changes — the snippet feature is entirely frontend, reusing
+  the existing `copy_bytes_to_clipboard` and `save_image_bytes` commands.
+
 ## [1.2.0] - 2026-07-07
 
 ### Added
@@ -55,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Global hotkeys, dark/light/system theme, custom title bar.
 - Localization: English, Chinese, Spanish, Hindi, and Burmese.
 
-[Unreleased]: https://github.com/KoPyae2/screen-shoot-app/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/KoPyae2/screen-shoot-app/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/KoPyae2/screen-shoot-app/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/KoPyae2/screen-shoot-app/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/KoPyae2/screen-shoot-app/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/KoPyae2/screen-shoot-app/releases/tag/v1.0.0
